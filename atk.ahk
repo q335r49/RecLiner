@@ -1,6 +1,7 @@
 ﻿#NoEnv
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+;incorporate clipboard???!!
 
 /*
 	Function: Anchor
@@ -122,9 +123,20 @@ PostMessage, 0x115,7,,ListBox1,AutotextKeeper
 GoSub, StartLog
 return
 
+OnClipboardChange:
+	if (A_EventInfo == 1) {
+		l:=Strlen(clipboard)
+		if l between 1 and 1000
+		{
+	   		StringReplace, entry, clipboard, `n, {enter}, All
+	   		StringReplace, entry, entry, !, {!}, All
+        	Entries:=entry . "`n" . Entries	
+		}
+	}
+return
+
 EditChanged:
-	if !EditSearchBuilt
-	{
+	if !EditSearchBuilt {
 		ControlGet, LB, List,,ListBox1,AutotextKeeper
 		StringSplit,dict,LB,`n
 		EditSearchBuilt=1
@@ -134,8 +146,7 @@ EditChanged:
 	best=
 	matchstring=
 	GuiControlGet,InputRow,,InputRow
-	If !InputRow
-	{
+	If !InputRow {
 		ToolTip
 		return
 	}
@@ -144,240 +155,228 @@ EditChanged:
 		StringGetPos,pos,dict%A_Index%,%InputRow%
 		if ErrorLevel
 			Continue
-		else if pos
-		{
+		else if pos {
 			if best
 				matchstring.="`n" . dict%A_Index%
 			else
 				best:=dict%A_Index%
-			matches+=1
+			matches++
 			if matches>5
 				break
-		}
-		else {
+		} else {
 			best:=dict%A_Index%
 			break
 		}
 	}
-	if best
-		Tooltip,%best% . %matchstring%,1,1
-	else
-		ToolTip
+	Tooltip,%best%%matchstring%,10,7
 return
 
 
 MenuFileIgnore:
-InputBox, Val,Minumum Length,,,150,100,,,,,%min_chare%
-if Val is integer
-{
-	if Val>0
-		min_chars:=Val
-}
+	InputBox, Val,Minumum Length,,,150,100,,,,,%min_chare%
+	if Val is integer
+	{
+		if Val>0
+			min_chars:=Val
+	}
 return
 
 MenuFileInsertLinebreak:
 	Menu, FileMenu, Check, &Linebreaks when sending multiple entries
-InsertLinebreak:=!InsertLinebreak
+	InsertLinebreak:=!InsertLinebreak
 return
 
 GuiSize:
-Anchor("TextChoice","wh")
-Anchor("InputRow","wy")
+	Anchor("TextChoice","wh")
+	Anchor("InputRow","wy")
 return
 
 MenuFilePause:
-Menu, FileMenu, Check, &Pause keylogging
-Pause
-Menu, FileMenu, Uncheck, &Pause keylogging
+	Menu, FileMenu, Check, &Pause keylogging
+	Pause
+	Menu, FileMenu, Uncheck, &Pause keylogging
 Return
 
 MenuFileExit:
-MsgBox, 4, Save, Save log?
-IfMsgBox, YES 
-	GoSub, MenuFileSave
-ExitApp
+	MsgBox, 4, Save, Save log?
+	IfMsgBox, YES 
+		GoSub, MenuFileSave
+	ExitApp
 
 !f3::GoSub, Send3
 !f2::GoSub, Send2
 !f1::GoSub, Send1
 
 Send3:
-Button+=1
+	Button+=1
 Send2:
-Button+=1
+	Button+=1
 Send1:
-Button+=1
-Send0:
-ControlGet, Try, List,,ListBox1,AutotextKeeper
-if !ErrorLevel
-	LB:=Try
-Tooltip
-Gui, Hide
-Sleep, 300
-StringSplit, Fields, LB, `n
-multiselect=0
-Loop, Parse, Button, `n%A_Space%%A_Tab%
-{
-	if A_LoopField is not integer
-		Continue
-	else if (A_LoopField>0 && A_LoopField<=Fields0)
+	Button+=1
+	ControlGet, Try, List,,ListBox1,AutotextKeeper
+	if !ErrorLevel
+		LB:=Try
+	Tooltip
+	Gui, Hide
+	Sleep, 300
+	StringSplit, Fields, LB, `n
+	multiselect=0
+	Loop, Parse, Button, `n%A_Space%%A_Tab%
 	{
-		Send, % (multiselect && InsertLinebreak? "{Enter}" : "") . Fields%A_LoopField%
-		multiselect=1
+		if A_LoopField is not integer
+			Continue
+		else if (A_LoopField>0 && A_LoopField<=Fields0) {
+			Send, % (multiselect && InsertLinebreak? "{Enter}" : "") . Fields%A_LoopField%
+			multiselect=1
+		} else if (A_LoopField<=0 && -A_LoopField<=Fields0) {
+			Actual:=Fields0+A_LoopField
+			Send, % (multiselect && InsertLinebreak? "{Enter}" : "") . Fields%Actual%
+			multiselect=1
+		}
 	}
-	else if (A_LoopField<=0 && -A_LoopField<=Fields0)
-	{
-		Actual:=Fields0+A_LoopField
-		Send, % (multiselect && InsertLinebreak? "{Enter}" : "") . Fields%Actual%
-		multiselect=1
-	}
-}
-Button=""
+	Button=""
 return
 
 Send:
-Tooltip
-Guicontrol, -altsubmit, TextChoice
-Gui, Submit
-Guicontrol, +altsubmit, TextChoice
-Sleep, 300
-if !InputRow
-{
-	Send, %TextChoice%
-} else if best
-	Send, %best%
-else
-	Send, %InputRow%
+	Tooltip
+	Guicontrol, -altsubmit, TextChoice
+	Gui, Submit
+	Guicontrol, +altsubmit, TextChoice
+	Sleep, 300
+	if !InputRow
+	{
+		Send, %TextChoice%
+	} else if best
+		Send, %best%
+	else
+		Send, %InputRow%
 return
 
 #s::
-Gui, show
-GuiControl,, InputRow
-PostMessage, 0x115,7,,ListBox1,AutotextKeeper
-GuiControl, Focus, InputRow
-if (StrLen(Entries)>min_chars)
-	GuiControl,,TextChoice,%Entries%
-Entries=
-EditSearchBuilt=0
+	Gui, show
+	GuiControl,, InputRow
+	PostMessage, 0x115,7,,ListBox1,AutotextKeeper
+	GuiControl, Focus, InputRow
+	if (StrLen(Entries)>min_chars)
+		GuiControl,,TextChoice,%Entries%
+	Entries=
+	EditSearchBuilt=0
 return
 
 GuiEscape:
-ControlGet, LB, List,,ListBox1,AutotextKeeper
-ToolTip
-Gui, hide
+	ControlGet, LB, List,,ListBox1,AutotextKeeper
+	ToolTip
+	Gui, hide
 return
 
 StartLog:
-Entries=
-while 1 {
-	Input, k, V M, {enter}{esc}{tab}
-	if (ErrorLevel = "EndKey:Enter" and  StrLen(k)>min_chars)
+	Entries=
+	Loop
 	{
-		out=
-		Loop,Parse,k
-		{
-			if (A_LoopField = "")
+		Input, k, V M, {enter}{esc}{tab}
+		if (ErrorLevel = "EndKey:Enter" and  StrLen(k)>min_chars) {
+			out=
+			Loop,Parse,k
 			{
-				out := RTrim(out)
-				StringGetPos,pos,out,%A_Space%,R1
-				if !ErrorLevel
-					StringLeft,out,out,% pos+1
+				if (A_LoopField = "") {
+					out := RTrim(out)
+					StringGetPos,pos,out,%A_Space%,R1
+					if !ErrorLevel
+						StringLeft,out,out,% pos+1
+				} else if (A_LoopField = "!")
+					out.="{!}"
+				else if (A_LoopField = "")
+					StringTrimRight,out,out,1
+				else if (A_LoopField = "")
+					out=
+				else
+					out.=A_LoopField
 			}
-			else if (A_LoopField = "!")
-				out.="{!}"
-			else if (A_LoopField = "")
-				StringTrimRight,out,out,1
-			else if (A_LoopField = "")
-				out=
-			else
-				out.=A_LoopField
+			Entries.=out . "`n"
 		}
-		Entries.=out . "`n"
 	}
-}
 return
 
 #IfWinActive AutotextKeeper ahk_class AutoHotkeyGUI
 ^s::
-MenuFileSave:
-ControlGet, LB, List,,ListBox1,AutotextKeeper
-FileDelete, autotextkeeper.log
-FileAppend, % LB, autotextkeeper.log
-FileDelete, autotextkeeper.opt
-GetClientSize(WinExist("AutotextKeeper"), w, h)
-FileAppend, % InsertLinebreak . "|" . min_chars . "|" . w . "|" . h, autotextkeeper.opt
-MsgBox, Saved!
+	MenuFileSave:
+	ControlGet, LB, List,,ListBox1,AutotextKeeper
+	FileDelete, autotextkeeper.log
+	FileAppend, % LB, autotextkeeper.log
+	FileDelete, autotextkeeper.opt
+	GetClientSize(WinExist("AutotextKeeper"), w, h)
+	FileAppend, % InsertLinebreak . "|" . min_chars . "|" . w . "|" . h, autotextkeeper.opt
+	MsgBox, Saved!
 Return
 
 MenuFileHelp:
-MsgBox,
-(
-TEXTKEEPER lets retreive everything you have typed! Every time you press (enter) the text you just typed will be stored in the history.
+	MsgBox,
+	(
+	TEXTKEEPER lets retreive everything you have typed! Every time you press (enter) the text you just typed will be stored in the history.
 
-- Only lines longer than %min_chars% characters will be stored.
-- Press alt-f1, alt-f2, alt-f3 to send the first 3 lines.
-- Press win-s to open the user interface.
-- Use the input box to search: enter will send the best match.
-- To send multiple lines, shift or ctrl-select those lines and press enter.
-- Note: when editing an entry, you must use "{enter}" to send a line break and "{!}" to send "!" (since the "!" is reserved for alt).
-)
+	- Only lines longer than %min_chars% characters will be stored.
+	- Press alt-f1, alt-f2, alt-f3 to send the first 3 lines.
+	- Press win-s to open the user interface.
+	- Use the input box to search: enter will send the best match.
+	- To send multiple lines, shift or ctrl-select those lines and press enter.
+	- Note: when editing an entry, you must use "{enter}" to send a line break and "{!}" to send "!" (since the "!" is reserved for alt).
+	)
 return
 
 ^e::
-MenuFileEdit:
-Gui, Submit, Nohide
-ifInString, TextChoice, `n
-	StringLeft, TextChoice, TextChoice, % InStr(TextChoice,"`n")
-if TextChoice is not integer
-	return
-if TextChoice<=0
-	return
-TextChoiceM1:=TextChoice-1
-ControlGet, LB, List,,ListBox1,AutotextKeeper
-if TextChoiceM1=0
-	start=1	
-else {
-	StringGetPos, start, LB, `n,L%TextChoiceM1%
-	start+=1
-}
-StringGetPos, end, LB, `n,L%TextChoice%
-if end=-1
-	len:=StrLen(LB)-start+1
-else
-	len:=end-start+1
-StringMid, extract, LB, %start%, %len%
-InputBox, NewInput, % "Row " . TextChoice . ":",,,,100,,,,,%extract%
-if !ErrorLevel
-{
-	if start!=1
-		TextChoice:=SubStr(LB,1,start) . NewInput . SubStr(LB,start+len)
+	MenuFileEdit:
+	Gui, Submit, Nohide
+	ifInString, TextChoice, `n
+		StringLeft, TextChoice, TextChoice, % InStr(TextChoice,"`n")
+	if TextChoice is not integer
+		return
+	if TextChoice<=0
+		return
+	TextChoiceM1:=TextChoice-1
+	ControlGet, LB, List,,ListBox1,AutotextKeeper
+	if TextChoiceM1=0
+		start=1	
+	else {
+		StringGetPos, start, LB, `n,L%TextChoiceM1%
+		start+=1
+	}
+	StringGetPos, end, LB, `n,L%TextChoice%
+	if end=-1
+		len:=StrLen(LB)-start+1
 	else
-		TextChoice:=NewInput . SubStr(LB,start+len)
-	GuiControl,,TextChoice,% "`n" . TextChoice
-}
+		len:=end-start+1
+	StringMid, extract, LB, %start%, %len%
+	InputBox, NewInput, % "Row " . TextChoice . ":",,,,100,,,,,%extract%
+	if !ErrorLevel {
+		if start!=1
+			TextChoice:=SubStr(LB,1,start) . NewInput . SubStr(LB,start+len)
+		else
+			TextChoice:=NewInput . SubStr(LB,start+len)
+		GuiControl,,TextChoice,% "`n" . TextChoice
+	}
 return
 
 ^k::
-MenuFileKeep:
-Guicontrol, -altsubmit, TextChoice
-Gui, Submit, Nohide
-Guicontrol, +altsubmit, TextChoice
-GuiControl,,TextChoice,% "`n" . TextChoice
+	MenuFileKeep:
+	Guicontrol, -altsubmit, TextChoice
+	Gui, Submit, Nohide
+	Guicontrol, +altsubmit, TextChoice
+	GuiControl,,TextChoice,% "`n" . TextChoice
 return
 
 ^d::
-MenuFileDelete:
-Gui, Submit, Nohide
-ControlGet, LB, List,,ListBox1,AutotextKeeper
-StringSplit, Fields, TextChoice, `n
-i=1
-NewContents=
-Loop, parse, LB, `n
-{
-	if (A_Index != Fields%i%)
-		NewContents:=NewContents . "`n" . A_LoopField
-	else
-		i+=1
-}
-GuiControl,,TextChoice, %NewContents%
+	MenuFileDelete:
+	Gui, Submit, Nohide
+	ControlGet, LB, List,,ListBox1,AutotextKeeper
+	StringSplit, Fields, TextChoice, `n
+	i=1
+	NewContents=
+	Loop, parse, LB, `n
+	{
+		if (A_Index != Fields%i%)
+			NewContents:=NewContents . "`n" . A_LoopField
+		else
+			i+=1
+	}
+	GuiControl,,TextChoice, %NewContents%
 return
