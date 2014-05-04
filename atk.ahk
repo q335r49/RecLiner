@@ -3,7 +3,6 @@ SendMode Input  ; Recommended for new scripts due to its superior speed and reli
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 ; definitely need to get rid of ESC!
 ; should go to bottom entry (or keep same entry) on delete / keep
-; need intellitype
 
 /*
 	Function: Anchor
@@ -313,12 +312,14 @@ Return
 MenuFileHelp:
 MsgBox,
 (
-WELCOME TO TEXTKEEPER!
-Textkeeper allows you to store, retreive, and edit everything you have typed. Press WIN-S to open the main window. Every time you press ENTER the text you just typed will be stored in the history. Only lines longer than %min_chars% characters will be stored. Delete, backspace, select-all, etc are also logged so don't worry about not making any mistakes.
+TEXTKEEPER lets retreive everything you have typed! Every time you press (enter) the text you just typed will be stored in the history.
 
-You can press ALT-F1, ALT-F2, ALT-F3 to quickly send the first (earliest) 3 lines. You can also use the main window. Double click on a line to send it. Send multiple lines by ctrl-clicking those entries and pressing enter. You can also use the input box. Examples: '8' will send the 8th line, '0' to send the last line, '-4' to send the 5th to last line, "1 -2 9" will send multiple lines.
-
-Edit > Edit (Ctrl-E) edits a single entry.  Use "{Enter}" to send a line break. You must use "{!}" to send "!" since the "!" is reserved for alt.
+- Only lines longer than %min_chars% characters will be stored.
+- Press alt-f1, alt-f2, alt-f3 to send the first 3 lines.
+- Press win-s to open the user interface.
+- Use the input box to search: enter will send the best match.
+- To send multiple lines, shift or ctrl-select those lines and press enter.
+- Note: when editing an entry, you must use "{enter}" to send a line break and "{!}" to send "!" (since the "!" is reserved for alt).
 )
 return
 
