@@ -237,6 +237,8 @@ while 1 {
 			}
 			else if (A_LoopField = "!")
 				out.="{!}"
+			else if (A_LoopField = "")
+				StringTrimRight,out,out,1
 			else
 				out.=A_LoopField
 		}
