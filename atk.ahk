@@ -97,7 +97,7 @@ height:=Options0>=4? Options4 : 380
 controlwidth:=width>40? width-20 : 20
 controlheight:=height>50? height-30 : 20
 Gui, +Delimiter`n
-Gui, Add, ListBox, gListBoxEvent vTextChoice w%controlwidth% h%controlheight% multi,%Data%
+Gui, Add, ListBox, vTextChoice w%controlwidth% h%controlheight% multi,%Data%
 Gui, Add, Edit, w%controlwidth% vInputRow,
 Gui, Add, Button, x+5 w0 gSend Default vSendButton, send
 Menu, FileMenu, Add, &Pause keylogging,MenuFilePause
@@ -126,7 +126,7 @@ GoSub, StartLog
 return
 
 MenuFileIgnore:
-InputBox, Val,Minumum Lengte,,,150,100,,,,,%min_chare%
+InputBox, Val,Minumum Length,,,150,100,,,,,%min_chare%
 if Val is integer
 {
 	if Val>0
@@ -158,7 +158,7 @@ ExitApp
 
 !f3::GoSub, Send3
 !f2::GoSub, Send2
-!f1::GoSub,Send1
+!f1::GoSub, Send1
 
 Send6:
 Button+=1
@@ -200,27 +200,11 @@ Button=""
 return
 
 Send:
-SendPressed=1
-ListBoxEvent:
-if (A_GuiEvent="DoubleClick" || SendPressed)
-{
-	If SendPressed
-	{
-		GuiControlGet, InputRow
-		Button:=InputRow
-		SendPressed=0
-		GoSub, Send0
-	} else {
-		Guicontrol, -altsubmit, TextChoice
-		Gui, Submit
-		Guicontrol, +altsubmit, TextChoice
-		Sleep, 300
-		Send, %TextChoice%
-	}
-} else {
-	Gui, Submit, Nohide
-	GuiControl,,InputRow,%TextChoice%
-}
+Guicontrol, -altsubmit, TextChoice
+Gui, Submit
+Guicontrol, +altsubmit, TextChoice
+Sleep, 300
+Send, %TextChoice%
 return
 
 #s::
@@ -243,8 +227,6 @@ while 1 {
 	Input, k, V M, {enter}{esc}{tab}
 	if (ErrorLevel = "EndKey:Enter" and  StrLen(k)>min_chars)
 	{
-		;StringReplace,k,k,!,{!},All
-		;Entries.=k . "`n"
 		out=
 		Loop,Parse,k
 		{
@@ -254,7 +236,6 @@ while 1 {
 				StringGetPos,pos,out,%A_Space%,R1
 				if !ErrorLevel
 					StringLeft,out,out,% pos+1
-				;StringTrimRight,out,out,1
 			}
 			else if (A_LoopField = "!")
 				out.="{!}"
