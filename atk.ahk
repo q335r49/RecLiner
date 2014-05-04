@@ -94,17 +94,6 @@ InsertLineBreak:=Options0>=1? Options1 : 1
 min_chars:=Options0>=2? Options2 : 20
 width:=Options0>=3? Options3 : 300
 height:=Options0>=4? Options4 : 380
-Log=
-(
-1.2.0 First public release
-1.2.1 Can now send multiple lines (multi-select and press enter or type multiple entries)
-1.2.3 Made gui resizable via the 'anchor' (http://www.autohotkey.net/~polyethene/#anchor)
-1.2.4 Option (default on) to insert line breaks when sending multiple log entries
-1.2.5 Added Edit > Delete Selected
-1.2.6 Options now saved (in separate file autotextkeeper.opt), option to set minimum length added
-1.2.7 Scrolls to last entry
-1.2.8 Gui size saved
-)
 controlwidth:=width>40? width-20 : 20
 controlheight:=height>50? height-30 : 20
 Gui, +Delimiter`n
@@ -121,7 +110,6 @@ Menu, EditMenu, Add, &Delete Selected	Ctrl+D, MenuFileDelete
 Menu, EditMenu, Add, Delete &Unselected	Ctrl+K, MenuFileKeep
 Menu, EditMenu, Add, &Edit Entry	Ctrl+E, MenuFileEdit
 Menu, HelpMenu, Add, &Help, MenuFileHelp
-Menu, HelpMenu, Add, &Changelog, MenuChangeLog
 Menu, MyMenuBar, Add, &File, :FileMenu
 Menu, MyMenuBar, Add, &Edit, :EditMenu
 Menu, MyMenuBar, Add, &Help, :HelpMenu
@@ -155,10 +143,6 @@ GuiSize:
 Anchor("TextChoice","wh")
 Anchor("InputRow","wy")
 return
-
-MenuChangeLog:
-MsgBox, %Log%
-Return
 
 MenuFilePause:
 Menu, FileMenu, Check, &Pause keylogging
