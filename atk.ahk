@@ -85,6 +85,8 @@ GetClientSize(hwnd, ByRef w, ByRef h)
     h := NumGet(rc, 12, "int")
 }
 
+CoordMode, ToolTip, Client
+
 FileRead, Data, autotextkeeper.log
 FileRead, Options, autotextkeeper.opt
 StringSplit, Options, Options,|
@@ -96,7 +98,7 @@ controlwidth:=width>40? width-20 : 20
 controlheight:=height>50? height-30 : 20
 Gui, +Delimiter`n
 Gui, Add, ListBox, vTextChoice w%controlwidth% h%controlheight% multi,%Data%
-Gui, Add, Edit, w%controlwidth% vInputRow,
+Gui, Add, Edit, w%controlwidth% vInputRow gEditChanged,
 Gui, Add, Button, x+5 w0 gSend Default vSendButton, send
 Menu, FileMenu, Add, &Pause keylogging,MenuFilePause
 Menu, FileMenu, Add, &Linebreaks when sending multiple entries,MenuFileInsertLinebreak
@@ -122,6 +124,50 @@ If InsertLinebreak
 PostMessage, 0x115,7,,ListBox1,AutotextKeeper
 GoSub, StartLog
 return
+
+EditChanged:
+	if !EditSearchBuilt
+	{
+		ControlGet, LB, List,,ListBox1,AutotextKeeper
+		StringSplit,dict,LB,`n
+		EditSearchBuilt=1
+	}
+	matches=0
+	index=1
+	best=
+	matchstring=
+	GuiControlGet,InputRow,,InputRow
+	If !InputRow
+	{
+		ToolTip
+		return
+	}
+	Loop, %dict0%
+	{
+		StringGetPos,pos,dict%A_Index%,%InputRow%
+		if ErrorLevel
+			Continue
+		else if pos
+		{
+			if best
+				matchstring.="`n" . dict%A_Index%
+			else
+				best:=dict%A_Index%
+			matches+=1
+			if matches>5
+				break
+		}
+		else {
+			best:=dict%A_Index%
+			break
+		}
+	}
+	if best
+		Tooltip,%best% . %matchstring%,1,1
+	else
+		ToolTip
+return
+
 
 MenuFileIgnore:
 InputBox, Val,Minumum Length,,,150,100,,,,,%min_chare%
@@ -168,6 +214,7 @@ Send0:
 ControlGet, Try, List,,ListBox1,AutotextKeeper
 if !ErrorLevel
 	LB:=Try
+Tooltip
 Gui, Hide
 Sleep, 300
 StringSplit, Fields, LB, `n
@@ -192,16 +239,18 @@ Button=""
 return
 
 Send:
+Tooltip
 Guicontrol, -altsubmit, TextChoice
 Gui, Submit
 Guicontrol, +altsubmit, TextChoice
+Sleep, 300
 if !InputRow
 {
-	Sleep, 300
 	Send, %TextChoice%
-} else {
+} else if best
+	Send, %best%
+else
 	Send, %InputRow%
-}
 return
 
 #s::
@@ -212,10 +261,12 @@ GuiControl, Focus, InputRow
 if (StrLen(Entries)>min_chars)
 	GuiControl,,TextChoice,%Entries%
 Entries=
+EditSearchBuilt=0
 return
 
 GuiEscape:
 ControlGet, LB, List,,ListBox1,AutotextKeeper
+ToolTip
 Gui, hide
 return
 
