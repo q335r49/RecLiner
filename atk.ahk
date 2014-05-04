@@ -1,8 +1,6 @@
 ﻿#NoEnv
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
-; definitely need to get rid of ESC!
-; should go to bottom entry (or keep same entry) on delete / keep
 
 /*
 	Function: Anchor
@@ -289,6 +287,8 @@ while 1 {
 				out.="{!}"
 			else if (A_LoopField = "")
 				StringTrimRight,out,out,1
+			else if (A_LoopField = "")
+				out=
 			else
 				out.=A_LoopField
 		}
