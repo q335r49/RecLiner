@@ -1,9 +1,7 @@
 ﻿#NoEnv
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
-; search?
 ; definitely need to get rid of ESC!
-; change delete unselected to keep unselected
 ; should go to bottom entry (or keep same entry) on delete / keep
 ; need intellitype
 
@@ -107,7 +105,7 @@ Menu, FileMenu, Add,
 Menu, FileMenu, Add, &Save	Ctrl+S,MenuFileSave
 Menu, FileMenu, Add, &Exit, MenuFileExit
 Menu, EditMenu, Add, &Delete Selected	Ctrl+D, MenuFileDelete
-Menu, EditMenu, Add, Delete &Unselected	Ctrl+K, MenuFileKeep
+Menu, EditMenu, Add, &Keep Selected	Ctrl+K, MenuFileKeep
 Menu, EditMenu, Add, &Edit Entry	Ctrl+E, MenuFileEdit
 Menu, HelpMenu, Add, &Help, MenuFileHelp
 Menu, MyMenuBar, Add, &File, :FileMenu
@@ -160,12 +158,6 @@ ExitApp
 !f2::GoSub, Send2
 !f1::GoSub, Send1
 
-Send6:
-Button+=1
-Send5:
-Button+=1
-Send4:
-Button+=1
 Send3:
 Button+=1
 Send2:
@@ -203,12 +195,18 @@ Send:
 Guicontrol, -altsubmit, TextChoice
 Gui, Submit
 Guicontrol, +altsubmit, TextChoice
-Sleep, 300
-Send, %TextChoice%
+if !InputRow
+{
+	Sleep, 300
+	Send, %TextChoice%
+} else {
+	Send, %InputRow%
+}
 return
 
 #s::
 Gui, show
+GuiControl,, InputRow
 PostMessage, 0x115,7,,ListBox1,AutotextKeeper
 GuiControl, Focus, InputRow
 if (StrLen(Entries)>min_chars)
