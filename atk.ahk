@@ -167,7 +167,10 @@ EditChanged:
 			Continue
 		else if pos {
 			if best
-				matchstring.="`n" . dict%A_Index%
+				if (StrLen(dict%A_Index%)>50)
+					matchstring.="`n" . SubStr(dict%A_Index%,1,50) . "..."
+				else
+					matchstring.="`n" . dict%A_Index%
 			else
 				best:=dict%A_Index%
 			matches++
@@ -178,7 +181,10 @@ EditChanged:
 			break
 		}
 	}
-	Tooltip,%best%%matchstring%,10,7
+	if (StrLen(best)>50)
+		Tooltip,% SubStr(best,1,50) . "..." . matchstring ,10,7 
+	else
+		Tooltip,% best . matchstring,10,7
 return
 
 
