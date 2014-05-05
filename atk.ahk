@@ -1,9 +1,6 @@
 ﻿#NoEnv
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
-; make keep select less dangerous
-; ok, need to handle ^r^n, seriously
-; need function to 'move up'
 
 /* Function: Anchor
 		Defines how controls should be automatically positioned relative to the new dimensions of a window when resized.
@@ -106,6 +103,7 @@ Menu, FileMenu, Add,
 Menu, FileMenu, Add, &Save	Ctrl+S,MenuFileSave
 Menu, FileMenu, Add, &Exit, MenuFileExit
 Menu, EditMenu, Add, &Delete Selected	Ctrl+D, MenuFileDelete
+Menu, EditMenu, Add,
 Menu, EditMenu, Add, &Keep Selected	Ctrl+K, MenuFileKeep
 Menu, EditMenu, Add, &Edit Entry	Ctrl+E, MenuFileEdit
 Menu, HelpMenu, Add, &Help, MenuFileHelp
@@ -340,7 +338,7 @@ MenuFileHelp:
 return
 
 ^e::
-	MenuFileEdit:
+MenuFileEdit:
 	Gui, Submit, Nohide
 	ifInString, TextChoice, `n
 		StringLeft, TextChoice, TextChoice, % InStr(TextChoice,"`n")
@@ -373,7 +371,7 @@ return
 return
 
 ^k::
-	MenuFileKeep:
+MenuFileKeep:
 	Guicontrol, -altsubmit, TextChoice
 	Gui, Submit, Nohide
 	Guicontrol, +altsubmit, TextChoice
@@ -381,7 +379,7 @@ return
 return
 
 ^d::
-	MenuFileDelete:
+MenuFileDelete:
 	Gui, Submit, Nohide
 	ControlGet, LB, List,,ListBox1,AutotextKeeper
 	StringSplit, Fields, TextChoice, `n
