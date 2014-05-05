@@ -1,7 +1,6 @@
 ﻿#NoEnv
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
-; need double-click again
 ; make keep select less dangerous
 ; ok, need to handle ^r^n, seriously
 ; need function to 'move up'
@@ -137,11 +136,12 @@ return
 
 OnClipboardChange:
 	l:=Strlen(clipboard)
-	if l between 1 and 5000
+	if l between 1 and 2000
 	{
-		StringReplace, entry, clipboard, `n, {enter}, All
+		StringReplace, entry, clipboard, `r`n, {enter}, All
+		StringReplace, entry, entry, `n, {enter}, All
 		StringReplace, entry, entry, !, {!}, All
-		Entries:=entry . "`n" . Entries	
+		Entries.=entry . "`n"
 	}
 return
 
@@ -264,7 +264,7 @@ return
 
 #s::
 	Gui, show
-	GuiControl,, InputRow
+	GuiControl,,InputRow
 	PostMessage, 0x115,7,,ListBox1,AutotextKeeper
 	GuiControl, Focus, InputRow
 	if (StrLen(Entries)>min_chars)
