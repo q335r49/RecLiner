@@ -125,6 +125,16 @@ PostMessage, 0x115,7,,ListBox1,AutotextKeeper
 GoSub, StartLog
 return
 
+ListBoxEvent:
+	if (A_GuiEvent="DoubleClick") {
+		Guicontrol, -altsubmit, TextChoice
+		Gui, Submit
+		Guicontrol, +altsubmit, TextChoice
+		Sleep, 300
+		Send, %TextChoice%
+	}
+return
+
 OnClipboardChange:
 	l:=Strlen(clipboard)
 	if l between 1 and 5000
