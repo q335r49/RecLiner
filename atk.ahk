@@ -1,10 +1,12 @@
 ﻿#NoEnv
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
-;incorporate clipboard???!!
+; need double-click again
+; make keep select less dangerous
+; ok, need to handle ^r^n, seriously
+; need function to 'move up'
 
-/*
-	Function: Anchor
+/* Function: Anchor
 		Defines how controls should be automatically positioned relative to the new dimensions of a window when resized.
 	Parameters:
 		cl - a control HWND, associated variable name or ClassNN to operate on
@@ -95,7 +97,7 @@ height:=Options0>=4? Options4 : 380
 controlwidth:=width>40? width-20 : 20
 controlheight:=height>50? height-30 : 20
 Gui, +Delimiter`n
-Gui, Add, ListBox, vTextChoice w%controlwidth% h%controlheight% multi,%Data%
+Gui, Add, ListBox, gListBoxEvent vTextChoice w%controlwidth% h%controlheight% multi,%Data%
 Gui, Add, Edit, w%controlwidth% vInputRow gEditChanged,
 Gui, Add, Button, x+5 w0 gSend Default vSendButton, send
 Menu, FileMenu, Add, &Pause keylogging,MenuFilePause
@@ -124,14 +126,12 @@ GoSub, StartLog
 return
 
 OnClipboardChange:
-	if (A_EventInfo == 1) {
-		l:=Strlen(clipboard)
-		if l between 1 and 1000
-		{
-	   		StringReplace, entry, clipboard, `n, {enter}, All
-	   		StringReplace, entry, entry, !, {!}, All
-        	Entries:=entry . "`n" . Entries	
-		}
+	l:=Strlen(clipboard)
+	if l between 1 and 5000
+	{
+		StringReplace, entry, clipboard, `n, {enter}, All
+		StringReplace, entry, entry, !, {!}, All
+		Entries:=entry . "`n" . Entries	
 	}
 return
 
