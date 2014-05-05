@@ -2,6 +2,10 @@
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
+ASC127:=chr(127)
+ASC8:=chr(8)
+ASC1:=chr(1)
+
 /* Function: Anchor
 		Defines how controls should be automatically positioned relative to the new dimensions of a window when resized.
 	Parameters:
@@ -292,16 +296,16 @@ StartLog:
 			out=
 			Loop,Parse,k
 			{
-				if (A_LoopField = "") {
+				if (A_LoopField = ASC127) {
 					out := RTrim(out)
 					StringGetPos,pos,out,%A_Space%,R1
 					if !ErrorLevel
 						StringLeft,out,out,% pos+1
 				} else if (A_LoopField = "!")
 					out.="{!}"
-				else if (A_LoopField = "")
+				else if (A_LoopField = ASC8)
 					StringTrimRight,out,out,1
-				else if (A_LoopField = "")
+				else if (A_LoopField = ASC1)
 					out=
 				else
 					out.=A_LoopField
