@@ -3,8 +3,8 @@ SendMode Input  ; Recommended for new scripts due to its superior speed and reli
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 ASC127:=chr(127)
-ASC8:=chr(8)
-ASC1:=chr(1)
+ASC8  :=chr(8)
+ASC1  :=chr(1)
 
 /* Function: Anchor
 		Defines how controls should be automatically positioned relative to the new dimensions of a window when resized.
@@ -100,30 +100,30 @@ Gui, +Delimiter`n
 Gui, Add, ListBox, gListBoxEvent vTextChoice w%controlwidth% h%controlheight% multi,%Data%
 Gui, Add, Edit, w%controlwidth% vInputRow gEditChanged,
 Gui, Add, Button, x+5 w0 gSend Default vSendButton, send
-Menu, FileMenu, Add, &Pause keylogging,MenuFilePause
-Menu, FileMenu, Add, &Linebreaks when sending multiple entries,MenuFileInsertLinebreak
-Menu, FileMenu, Add, &Ignores lines shorter than...,MenuFileIgnore
-Menu, FileMenu, Add,
-Menu, FileMenu, Add, &Save	Ctrl+S,MenuFileSave
-Menu, FileMenu, Add, &Exit, MenuFileExit
-Menu, EditMenu, Add, &Delete Selected	Ctrl+D, MenuFileDelete
-Menu, EditMenu, Add,
-Menu, EditMenu, Add, &Keep Selected	Ctrl+K, MenuFileKeep
-Menu, EditMenu, Add, &Edit Entry	Ctrl+E, MenuFileEdit
-Menu, HelpMenu, Add, &Help, MenuFileHelp
-Menu, MyMenuBar, Add, &File, :FileMenu
-Menu, MyMenuBar, Add, &Edit, :EditMenu
-Menu, MyMenuBar, Add, &Help, :HelpMenu
-Gui, Menu, MyMenuBar
+Menu, ContextMenu, Add, &Help, MenuFileHelp
+Menu, ContextMenu, Add, &Pause keylogging,MenuFilePause
+Menu, ContextMenu, Add, &Linebreaks when sending multiple entries,MenuFileInsertLinebreak
+Menu, ContextMenu, Add, &Ignores lines shorter than...,MenuFileIgnore
+Menu, ContextMenu, Add, &Save	Ctrl+S,MenuFileSave
+Menu, ContextMenu, Add,
+Menu, ContextMenu, Add, &Delete Selected	Ctrl+D, MenuFileDelete
+Menu, ContextMenu, Add,
+Menu, ContextMenu, Add, &Keep Only Selected	Ctrl+K, MenuFileKeep
+Menu, ContextMenu, Add, &Edit Entry	Ctrl+E, MenuFileEdit
+Menu, ContextMenu, Add, &Exit, MenuFileExit
 GuiControl, Focus, InputRow
 Gui, +Resize
 Gui, show,w%width%,AutotextKeeper 
 Guicontrol, +altsubmit, TextChoice
 ControlGet, LB, List,,ListBox1,AutotextKeeper
 If InsertLinebreak
-	Menu, FileMenu, Check, &Linebreaks when sending multiple entries
+	Menu, ContextMenu, Check, &Linebreaks when sending multiple entries
 PostMessage, 0x115,7,,ListBox1,AutotextKeeper
 GoSub, StartLog
+return
+
+GuiContextMenu:
+Menu, ContextMenu, Show, %A_GuiX%, %A_GuiY%
 return
 
 ListBoxEvent:
@@ -200,7 +200,7 @@ MenuFileIgnore:
 return
 
 MenuFileInsertLinebreak:
-	Menu, FileMenu, Check, &Linebreaks when sending multiple entries
+	Menu, ContextMenu, Check, &Linebreaks when sending multiple entries
 	InsertLinebreak:=!InsertLinebreak
 return
 
@@ -210,9 +210,9 @@ GuiSize:
 return
 
 MenuFilePause:
-	Menu, FileMenu, Check, &Pause keylogging
+	Menu, ContextMenu, Check, &Pause keylogging
 	Pause
-	Menu, FileMenu, Uncheck, &Pause keylogging
+	Menu, ContextMenu, Uncheck, &Pause keylogging
 Return
 
 MenuFileExit:
