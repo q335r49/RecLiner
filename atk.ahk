@@ -2,6 +2,7 @@
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
+;figure out weird file writing bug
 ;some way to set and save global hotkey (options file, as before?)
 ;need setting to change min length
 ;any way to send multiple lines??
@@ -11,10 +12,11 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 ASC127:=chr(127)
 ASC8  :=chr(8)
 ASC1  :=chr(1)
+min_chars=14
 
 dict:=Object()
 size=0
-If !FileExist("atk2.log")
+if !FileExist("atk2.log")
 	MsgBox % "Warning: atk2.log not found in " . A_ScriptDir . "`nTo save log between sessions, right click on tray menu"
 else {
 	Loop, Read, atk2.log
@@ -30,6 +32,10 @@ Menu, tray, Add, Write log to atk2.log, Save
 Menu, tray, Add, Open atk2.log, OpenLog
 Gosub, StartLog
 return
+
+
+
+
 
 !f1::Send, % dict[0]
 !f2::Send, % dict[1]
@@ -58,8 +64,10 @@ return
 	CurrentEntry=
 	Loop
 	{
-		Input, char, L1, {enter}{esc}{tab}
-		if ErrorLevel!=Max
+		Input, char, L1, {enter}{esc}{tab}{bs}
+		if ErrorLevel=EndKey:Backspace
+			StringTrimRight, CurrentEntry, CurrentEntry, 1
+		else if ErrorLevel!=Max
 			break
 		CurrentEntry.=char
 		matchstring=
