@@ -2,6 +2,7 @@
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
+;some way to set and save global hotkey (options file, as before?)
 ;need setting to change min length
 ;any way to send multiple lines??
 ;need to make sure that i am explicitly specifying `r`n when reading too
@@ -24,8 +25,9 @@ else {
 	MsgBox % size . " lines read from " . A_ScriptDir . "\atk2.log"
 }
 Menu, tray, Add,
-Menu, tray, Add, Autotextkeeper help..., MenuHelp
-Menu, tray, Add, Write log file to atk2.log, MenuSave
+Menu, tray, Add, Autotextkeeper help..., Help
+Menu, tray, Add, Write log to atk2.log, Save
+Menu, tray, Add, Open atk2.log, OpenLog
 Gosub, StartLog
 return
 
@@ -33,7 +35,11 @@ return
 !f2::Send, % dict[1]
 !f3::Send, % dict[2]
 
-MenuSave:
+OpenLog:
+	Run, atk2.log
+return
+
+Save:
 	Log := FileOpen("atk2.log","w `r`n")
 	for key,value in dict
 		Log.WriteLine(value)
@@ -41,10 +47,10 @@ MenuSave:
 	MsgBox % size . " lines written to " . A_ScriptDir . "\atk2.log"
 return
 
-MenuHelp:
+Help:
 return
 
-#q::
+#s::
 	ToolTip, (Enter fragment),10,7
 	matches=0
 	index=1
