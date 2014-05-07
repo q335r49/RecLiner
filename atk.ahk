@@ -2,13 +2,6 @@
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
-;better name!!
-;figure out weird file writing bug
-;ini read: hotkey,min length
-;any way to send multiple lines??
-;need to make sure that i am explicitly specifying `r`n when reading too
-;make sure enters are properly being converted
-
 if !FileExist("atk.ini")
 {
 FileAppend,
@@ -49,14 +42,28 @@ else {
 	}
 	MsgBox % size . " lines read from " . A_ScriptDir . "\atk.log"
 }
-Menu, tray, Add,
-Menu, tray, Add, Autotextkeeper help..., Help
+Menu, tray, NoStandard
+Menu, tray, Add, Help, Help
 Menu, tray, Add, Write log to atk.log, Save
 Menu, tray, Add, Open atk.log, OpenLog
+Menu, tray, Add,
+Menu, tray, Add, Reload, Reload
+Menu, tray, Add, Pause, Pause
+Menu, tray, Add, Exit, Exit
 Gosub, StartLog
 return
 
 
+
+
+
+Reload:
+	reload
+Exit:
+	ExitApp
+Pause:
+	Pause
+return
 
 !f1::Send, % dict[0]
 !f2::Send, % dict[1]
@@ -78,13 +85,14 @@ Help:
 MsgBox,
 (
 AUTOTEXTKEEPER lets quickly retreive everything you have typed!
-Every time you press ENTER the text you just typed will be stored in the history.
-Win-S will search through history entires, and ENTER or TAB will input the first choice!
+Every time you press ENTER or ESC the text you just typed will be stored as an entry in the history.
+Win-S will search through history entries and ENTER or TAB will input the best match!
 
 Tips:
 - Right click on the tray icon and selet "Write log" to write to atk.log
 - Press alt-f1, alt-f2, or alt-f3 to send the first 3 lines.
-- Note: when editing the log entry, you must use "{enter}" to send a line break and "{!}" to send "!" ("!" is reserved for alt).
+- Note: when editing atk.log, you must use "{enter}" to send a line break and "{!}" to send "!" ("!" is reserved for alt).
+- To change the hotkey and other settings, uncomment lines in atk.ini (file should be automatically created in the same directory)
 )
 return
 
@@ -96,7 +104,7 @@ StartCompletion:
 	CurrentEntry=
 	Loop
 	{
-		Input, char, L1, {enter}{esc}{tab}{bs}
+		Input, char, L1, {enter}{esc}{bs}
 		if ErrorLevel=EndKey:Backspace
 			StringTrimRight, CurrentEntry, CurrentEntry, 1
 		else if ErrorLevel!=Max

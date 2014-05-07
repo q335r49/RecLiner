@@ -14,3 +14,4 @@ Install [Autohotkey](http://www.autohotkey.com/) and run [atk.ahk](https://githu
 - Edit atk.ini to manually change settings.
 - Press <kbd>alt</kbd>+<kbd>f1</kbd>, <kbd>alt</kbd>+<kbd>f2</kbd>, or <kbd>alt</kbd>+<kbd>f3</kbd> to send the first 3 lines in atk.log
 - Note: when editing an entry, you must use "{enter}" to send a line break and "{!}" to send "!" (since the "!" is reserved for alt).
+- You might want to occasionally trim atk.log to keep the most important entries
