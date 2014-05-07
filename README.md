@@ -1,12 +1,12 @@
 #Autotextkeeper
-Autotextkeeper lets retrieve everything you've recently typed!
+* Autotextkeeper lets retrieve everything you've recently typed!
 * Every time you press <kbd>enter</kbd> or <kbd>esc</kbd> the text you just typed will be stored in the history.
 * Pressing <kbd>win</kbd>+<kbd>s</kbd> will autocomplete from the entries. Lines that start with the searched text are prioritized.
 
 ####Startup
 Install [Autohotkey](http://www.autohotkey.com/) and run [atk.ahk](https://github.com/q335r49/Autotextkeeper/raw/master/atk.ahk).
 
-####Useage
+####Tips
 - Right-click on the tray icon for help, to reload, exit, etc.
 - Only lines longer than 14 characters will be stored.
 - Edit atk.log to manually edit entries.
