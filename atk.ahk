@@ -2,38 +2,59 @@
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
+;better name!!
 ;figure out weird file writing bug
-;some way to set and save global hotkey (options file, as before?)
-;need setting to change min length
+;ini read: hotkey,min length
 ;any way to send multiple lines??
 ;need to make sure that i am explicitly specifying `r`n when reading too
 ;make sure enters are properly being converted
 
+if !FileExist("atk.ini")
+{
+FileAppend,
+(
+;Uncomment to change settings
+
+;[main]
+;Hotkey=#s
+;See http://www.autohotkey.com/docs/Hotkeys.htm for further documenation
+;Examples: ^t (control t) !f5 (alt f5) +f6 (shift f6)
+;Default if none specified: #s
+
+;MinLength=14
+;Strings shorter than this length will not be stored in the archive
+), atk.ini
+	mainHotkey="#s"
+	min_chars=14
+} else {
+	IniRead, mainHotkey, atk.ini, main, Hotkey, #s
+	IniRead, min_chars, atk.ini, main, Hotkey, 14
+}
+
+Hotkey,%mainHotkey%,StartCompletion
+
 ASC127:=chr(127)
 ASC8  :=chr(8)
 ASC1  :=chr(1)
-min_chars=14
 
 dict:=Object()
 size=0
-if !FileExist("atk2.log")
-	MsgBox % "Warning: atk2.log not found in " . A_ScriptDir . "`nTo save log between sessions, right click on tray menu"
+if !FileExist("atk.log")
+	MsgBox % "Warning: `n" . A_ScriptDir . "\atk.log not found!`n`nTo save log between sessions, right click on tray menu and select 'Write log'"
 else {
-	Loop, Read, atk2.log
+	Loop, Read, atk.log
 	{
 		dict[size]:=A_LoopReadLine
 		size++
 	}
-	MsgBox % size . " lines read from " . A_ScriptDir . "\atk2.log"
+	MsgBox % size . " lines read from " . A_ScriptDir . "\atk.log"
 }
 Menu, tray, Add,
 Menu, tray, Add, Autotextkeeper help..., Help
-Menu, tray, Add, Write log to atk2.log, Save
-Menu, tray, Add, Open atk2.log, OpenLog
+Menu, tray, Add, Write log to atk.log, Save
+Menu, tray, Add, Open atk.log, OpenLog
 Gosub, StartLog
 return
-
-
 
 
 
@@ -42,21 +63,32 @@ return
 !f3::Send, % dict[2]
 
 OpenLog:
-	Run, atk2.log
+	Run, atk.log
 return
 
 Save:
-	Log := FileOpen("atk2.log","w `r`n")
+	Log := FileOpen("atk.log","w `r`n")
 	for key,value in dict
 		Log.WriteLine(value)
 	Log.close()
-	MsgBox % size . " lines written to " . A_ScriptDir . "\atk2.log"
+	MsgBox % size . " lines written to " . A_ScriptDir . "\atk.log"
 return
 
 Help:
+MsgBox,
+(
+AUTOTEXTKEEPER lets quickly retreive everything you have typed!
+Every time you press ENTER the text you just typed will be stored in the history.
+Win-S will search through history entires, and ENTER or TAB will input the first choice!
+
+Tips:
+- Right click on the tray icon and selet "Write log" to write to atk.log
+- Press alt-f1, alt-f2, or alt-f3 to send the first 3 lines.
+- Note: when editing the log entry, you must use "{enter}" to send a line break and "{!}" to send "!" ("!" is reserved for alt).
+)
 return
 
-#s::
+StartCompletion:
 	ToolTip, (Enter fragment),10,7
 	matches=0
 	index=1
