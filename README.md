@@ -2,6 +2,7 @@
 * Autotextkeeper lets retrieve everything you've recently typed!
 * Every time you press <kbd>enter</kbd> or <kbd>esc</kbd> the text you just typed will be stored in the history.
 * Pressing <kbd>win</kbd>+<kbd>s</kbd> will autocomplete from the entries. Lines that start with the searched text are prioritized.
+* Check out the **[Youtube video](https://www.youtube.com/watch?v=buHfIfkn3JM&feature=youtu.be)**!
 
 ####Startup
 Install [Autohotkey](http://www.autohotkey.com/) and run [atk.ahk](https://github.com/q335r49/Autotextkeeper/raw/master/atk.ahk).
