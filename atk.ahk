@@ -77,29 +77,33 @@ return
 			if pos=-1
 			{
 				best=
+				bestpos:=pos
 				matchstring=
 			}
 			else if pos {
 				if !best
+				{
+					bestpos:=pos
 					best:=value
-				else if (StrLen(value)>50)
-					matchstring.="`n" . SubStr(value,1,50) . "..."
-				else
+				} else if (StrLen(value)>50)
+					matchstring.=pos+50>StrLen(value)? ("`n..." . SubStr(value,-50)) : ("`n" . SubStr(value,pos,50) . "...")
+			    else
 					matchstring.="`n" . value
 				matches++
 				if matches>5
 					break
 			} else {
+				bestpos:=1
 				best:=value
 				break
 			}
 		}
 		if (!matches and !best)
 			Tooltip,% CurrentEntry ":`n(no matches)",10,7
-		else if (StrLen(best)>50)
-			Tooltip,% CurrentEntry ":`n" SubStr(best,1,50) . "..." . matchstring,10,7 
-		else
-			Tooltip,% CurrentEntry ":`n" best . matchstring,10,7
+		else if (StrLen(best)>50) {
+			Tooltip,% CurrentEntry . ":`n" . (bestpos+50>StrLen(best)? "..." . SubStr(best,-50) : SubStr(best,bestpos,50) . "...") . matchstring,10,7 
+		} else
+			Tooltip,% CurrentEntry . ":`n" . best . matchstring,10,7
 	}
 	if ErrorLevel!=EndKey:Escape
 		Send, %best%
