@@ -57,7 +57,7 @@ return
 !f3::Send, % dict[2]
 
 StartCompletion:
-	ToolTip, Enter fragment ( or ^E Edit log ^H Help ^R Reload ^W Write log ^X Exit),10,7
+	ToolTip, Enter fragment or Ctrl + (E)dit log (H)elp (R)eload (W)rite log E(X)it),10,7
 	matches=0
 	index=1
 	best=
@@ -88,15 +88,16 @@ StartCompletion:
 		} else if (char=ctrH) {
 			msgbox,
 			(
-Autotextkeeper lets quickly retreive everything you have typed!
-Every time you press enter or esc the text you just typed will be stored as an entry in the history.
-Win-s will search through history entries and enter or tab will input the best match!
+Autotextkeeper lets you quickly retreive everything you've typed!
+
+When you press enter or esc the text just typed will be automatically stored as a history entry.
+%mainHotkey% will search the history!
 
 Tips:
-- right click on the tray icon and selet "write log" to write to atk.log
-- press alt-f1, alt-f2, or alt-f3 to send the first 3 lines.
-- note: when editing atk.log, you must use "{enter}" to send a line break and "{!}" to send "!" ("!" is reserved for alt).
-- to change the hotkey and other settings, uncomment lines in atk.ini (file should be automatically created in the same directory)
+- press alt-f1, alt-f2, or alt-f3 to send the first 3 lines
+- note: when editing atk.log, you must use "{enter}" to send a line break and "{!}" to send "!" ("!" is reserved for alt)
+- only lines longer than 14 characters will be stored
+- to change the hotkey and other settings, uncomment lines in atk.ini, which should be automatically by the script
 			)
 			ToolTip
 			return
