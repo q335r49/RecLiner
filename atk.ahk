@@ -38,18 +38,35 @@ ctrZ :=chr(26)
 dict:=Object()
 size=0
 if !FileExist("atk.log")
-	MsgBox % "Warning: `n" . A_ScriptDir . "\atk.log not found!`n`nTo save log between sessions, right click on tray menu and select 'Write log'"
+	MsgBox % "Warning: `n" . A_ScriptDir . "\atk.log not found!`n`nTo save log between sessions, use " . %mainHotkey% . " Ctrl-W"
 else {
 	Loop, Read, atk.log
-	{
-		dict[size]:=A_LoopReadLine
-		size++
-	}
-	MsgBox % size . " lines read from " . A_ScriptDir . "\atk.log"
+		dict[size++]:=A_LoopReadLine
+	MsgBox % size . " lines loaded from " . A_ScriptDir . "\atk.log"
 }
-Gosub, StartLog
-return
-
+Loop {
+	Input, k, V M, {enter}{esc}
+	if (StrLen(k)>min_chars) {
+		out=
+		Loop,Parse,k
+		{
+			if (A_LoopField = shDel) {
+				out := RTrim(out)
+				StringGetPos,pos,out,%A_Space%,R1
+				if !ErrorLevel
+					StringLeft,out,out,% pos+1
+			} else if (A_LoopField = "!")
+				out.="{!}"
+			else if (A_LoopField = ctrH)
+				StringTrimRight,out,out,1
+			else if (A_LoopField = ctrA)
+				out=
+			else
+				out.=A_LoopField
+		}
+		dict[size++]:=out
+	}
+}
 
 
 !f1::Send, % dict[0]
@@ -122,8 +139,7 @@ Tips:
 				best=
 				bestpos:=pos
 				matchstring=
-			}
-			else if pos {
+			} else if pos {
 				if !best
 				{
 					bestpos:=pos
@@ -143,9 +159,9 @@ Tips:
 		}
 		if (!matches and !best)
 			Tooltip,% CurrentEntry ":`n(no matches)",10,7
-		else if (StrLen(best)>50) {
+		else if (StrLen(best)>50)
 			Tooltip,% CurrentEntry . ":`n" . (bestpos+50>StrLen(best)? "..." . SubStr(best,-50) : SubStr(best,bestpos,50) . "...") . matchstring,10,7 
-		} else
+		else
 			Tooltip,% CurrentEntry . ":`n" . best . matchstring,10,7
 	}
 	if ErrorLevel!=EndKey:Escape
@@ -153,33 +169,3 @@ Tips:
 	Tooltip
 return
 
-StartLog:
-	Loop
-	{
-		Input, k, V M, {enter}{esc}{tab}
-		if (ErrorLevel = "EndKey:Enter" and  StrLen(k)>min_chars) {
-			out=
-			Loop,Parse,k
-			{
-				if (A_LoopField = shDel) {
-					out := RTrim(out)
-					StringGetPos,pos,out,%A_Space%,R1
-					if !ErrorLevel
-						StringLeft,out,out,% pos+1
-				} else if (A_LoopField = "!")
-					out.="{!}"
-				else if (A_LoopField = ctrH)
-					StringTrimRight,out,out,1
-				else if (A_LoopField = ctrA)
-					out=
-				else
-					out.=A_LoopField
-			}
-			if out
-			{
-				dict[size]:=out
-				size++
-			}
-		}
-	}
-return
