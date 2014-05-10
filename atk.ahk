@@ -2,16 +2,12 @@
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
-if !FileExist("atk.ini")
-{
-FileAppend,
+if !FileExist("atk.ini") {
+	FileAppend,
 (
-;Uncomment to change settings
-
 ;[main]
 ;Hotkey=#s
-;See http://www.autohotkey.com/docs/Hotkeys.htm for further documenation
-;Examples: ^t (control t) !f5 (alt f5) +f6 (shift f6)
+;Examples: ^t (control t) !f5 (alt f5) +f6 (shift f6) See http://www.autohotkey.com/docs/Hotkeys.htm for further documenation
 ;Default if none specified: #s
 
 ;MinLength=14
@@ -21,11 +17,9 @@ FileAppend,
 	min_chars=14
 } else {
 	IniRead, mainHotkey, atk.ini, main, Hotkey, #s
-	IniRead, min_chars, atk.ini, main, Hotkey, 14
+	IniRead, min_chars, atk.ini, main, MinLength, 14
 }
-
 Hotkey,%mainHotkey%,StartCompletion
-
 shDel:=chr(127)
 ctrR :=chr(18)
 ctrW :=chr(23)
@@ -34,9 +28,8 @@ ctrA :=chr(1)
 ctrE :=chr(5)
 ctrX :=chr(24)
 ctrZ :=chr(26)
-
-dict:=Object()
-size=0
+dict :=Object()
+size :=0
 if !FileExist("atk.log")
 	MsgBox % "Warning: `n" . A_ScriptDir . "\atk.log not found!`n`nTo save log between sessions, use " . %mainHotkey% . " Ctrl-W"
 else {
@@ -64,17 +57,16 @@ Loop {
 			else
 				out.=A_LoopField
 		}
-		dict[size++]:=out
+		dict[size]:=out
+		size++
 	}
 }
-
 
 !f1::Send, % dict[0]
 !f2::Send, % dict[1]
 !f3::Send, % dict[2]
-
 StartCompletion:
-	ToolTip, Enter fragment or Ctrl + (E)dit log (H)elp (R)eload (W)rite log E(X)it),10,7
+	ToolTip, Enter fragment or press Ctrl + (E)dit log (H)elp (R)eload (W)rite log E(X)it
 	matches=0
 	index=1
 	best=
@@ -119,8 +111,8 @@ Tips:
 			ToolTip
 			return
 		} else if (char=ctrX) {
-			MsgBox, 4,, Save to log?
-			IfMsgBox Yes
+			MsgBox, 4,, Write to log?
+			IfMsgBox, Yes
 			{
 				Log := FileOpen("atk.log","w `r`n")
 				for key,value in dict
@@ -131,15 +123,16 @@ Tips:
 			ExitApp
 		}
 		matchstring=
-		for key,value in dict
-		{
+		for key,value in dict {
 			StringGetPos,pos,value,%CurrentEntry%
 			if pos=-1
 			{
 				best=
 				bestpos:=pos
 				matchstring=
-			} else if pos {
+			}
+			else if pos
+			{
 				if !best
 				{
 					bestpos:=pos
@@ -158,14 +151,13 @@ Tips:
 			}
 		}
 		if (!matches and !best)
-			Tooltip,% CurrentEntry ":`n(no matches)",10,7
+			Tooltip,% CurrentEntry . ":`n(no matches)"
 		else if (StrLen(best)>50)
-			Tooltip,% CurrentEntry . ":`n" . (bestpos+50>StrLen(best)? "..." . SubStr(best,-50) : SubStr(best,bestpos,50) . "...") . matchstring,10,7 
+			Tooltip,% CurrentEntry . ":`n" . (bestpos+50>StrLen(best)? "..." . SubStr(best,-50) : SubStr(best,bestpos,50) . "...") . matchstring
 		else
-			Tooltip,% CurrentEntry . ":`n" . best . matchstring,10,7
+			Tooltip,% CurrentEntry . ":`n" . best . matchstring
 	}
 	if ErrorLevel!=EndKey:Escape
 		Send, %best%
 	Tooltip
 return
-
