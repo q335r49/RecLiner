@@ -65,7 +65,6 @@ Loop {
 StartCompletion:
 	ToolTip, Enter text or ^Editlog ^Help ^Reload ^Writelog e^Xit f1 f2 f3: first 3 lines
 	matches=0
-	index=1
 	best=
 	CurrentEntry=
 	Loop
@@ -136,8 +135,7 @@ StartCompletion:
 					matchstring.=pos+50>StrLen(value)? ("`n..." . SubStr(value,-50)) : ("`n" . SubStr(value,pos,50) . "...")
 			    else
 					matchstring.="`n" . value
-				matches++
-				if matches>5
+				if ++matches>5
 					break
 			} else {
 				bestpos:=1
@@ -158,7 +156,7 @@ StartCompletion:
 		Send, % dict[1]
 	else if ErrorLevel=EndKey:F3
 		Send, % dict[2]
-	if ErrorLevel!=EndKey:Escape
+	else if ErrorLevel!=EndKey:Escape
 		Send, %best%
 	Tooltip
 return
