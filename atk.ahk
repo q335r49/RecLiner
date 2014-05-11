@@ -63,7 +63,7 @@ Loop {
 }
 
 StartCompletion:
-	ToolTip, Enter text or ^Editlog ^Help ^Reload ^Writelog e^Xit f1 f2 f3: first 3 lines
+	ToolTip, Enter text or ^Editlog ^Help ^Reload ^Writelog e^Xit f1 f2 f3: first 3 lines,10,10
 	matches=0
 	best=
 	CurrentEntry=
@@ -144,11 +144,11 @@ StartCompletion:
 			}
 		}
 		if (!matches and !best)
-			Tooltip,% CurrentEntry . ":`n(no matches)"
+			Tooltip,% CurrentEntry . ":`n(no matches)",10,10
 		else if (StrLen(best)>50)
-			Tooltip,% CurrentEntry . ":`n" . (bestpos+50>StrLen(best)? "..." . SubStr(best,-50) : SubStr(best,bestpos,50) . "...") . matchstring
+			Tooltip,% CurrentEntry . ":`n" . (bestpos+50>StrLen(best)? "..." . SubStr(best,-50) : SubStr(best,bestpos,50) . "...") . matchstring,10,10
 		else
-			Tooltip,% CurrentEntry . ":`n" . best . matchstring
+			Tooltip,% CurrentEntry . ":`n" . best . matchstring,10,10
 	}
 	if ErrorLevel=EndKey:F1
 		Send, % dict[0]
