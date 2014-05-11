@@ -62,9 +62,6 @@ Loop {
 	}
 }
 
-!f1::Send, % dict[0]
-!f2::Send, % dict[1]
-!f3::Send, % dict[2]
 StartCompletion:
 	ToolTip, Enter fragment or press Ctrl + (E)dit log (H)elp (R)eload (W)rite log E(X)it
 	matches=0
@@ -73,7 +70,7 @@ StartCompletion:
 	CurrentEntry=
 	Loop
 	{
-		Input, char, M L1, {enter}{esc}{bs}
+		Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}
 		if ErrorLevel=EndKey:Backspace
 			StringTrimRight, CurrentEntry, CurrentEntry, 1
 		else if ErrorLevel!=Max
@@ -96,17 +93,15 @@ StartCompletion:
 			return
 		} else if (char=ctrH) {
 			msgbox,
-			(
-Autotextkeeper lets you quickly retreive everything you've typed!
-
-When you press enter or esc the text just typed will be automatically stored as a history entry.
-%mainHotkey% will search the history!
-
-Tips:
-- press alt-f1, alt-f2, or alt-f3 to send the first 3 lines
-- note: when editing atk.log, you must use "{enter}" to send a line break and "{!}" to send "!" ("!" is reserved for alt)
-- only lines longer than 14 characters will be stored
-- to change the hotkey and other settings, uncomment lines in atk.ini, which should be automatically by the script
+			( LTrim
+				Autotextkeeper lets you quickly retreive everything you've typed!`n
+				When you press enter or esc the text just typed will be automatically stored as a history entry.
+				%mainHotkey% will search the history!`n
+				Tips:
+				- press %mainHotkey% f1, %mainHotkey% f2, or %mainHotkey% f3 to send the first 3 lines
+				- note: when editing atk.log, you must use "{enter}" to send a line break and "{!}" to send "!" ("!" is reserved for alt)
+				- only lines longer than 14 characters will be stored
+				- to change the hotkey and other settings, uncomment lines in atk.ini, which should be automatically by the script
 			)
 			ToolTip
 			return
@@ -157,6 +152,12 @@ Tips:
 		else
 			Tooltip,% CurrentEntry . ":`n" . best . matchstring
 	}
+	if ErrorLevel=EndKey:F1
+		Send, % dict[0]
+	else if ErrorLevel=EndKey:F2
+		Send, % dict[1]
+	else if ErrorLevel=EndKey:F3
+		Send, % dict[2]
 	if ErrorLevel!=EndKey:Escape
 		Send, %best%
 	Tooltip
