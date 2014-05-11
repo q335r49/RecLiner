@@ -63,7 +63,7 @@ Loop {
 }
 
 StartCompletion:
-	ToolTip, Enter fragment or press Ctrl + (E)dit log (H)elp (R)eload (W)rite log E(X)it
+	ToolTip, Enter text or ^Editlog ^Help ^Reload ^Writelog e^Xit f1 f2 f3: first 3 lines
 	matches=0
 	index=1
 	best=
@@ -92,18 +92,18 @@ StartCompletion:
 			ToolTip
 			return
 		} else if (char=ctrH) {
+			ToolTip
 			msgbox,
 			( LTrim
-				Autotextkeeper lets you quickly retreive everything you've typed!`n
-				When you press enter or esc the text just typed will be automatically stored as a history entry.
-				%mainHotkey% will search the history!`n
-				Tips:
-				- press %mainHotkey% f1, %mainHotkey% f2, or %mainHotkey% f3 to send the first 3 lines
-				- note: when editing atk.log, you must use "{enter}" to send a line break and "{!}" to send "!" ("!" is reserved for alt)
-				- only lines longer than 14 characters will be stored
-				- to change the hotkey and other settings, uncomment lines in atk.ini, which should be automatically by the script
+				Autotextkeeper lets you store and retreive everything you've typed!
+				Hotkey: %mainHotkey%`n
+				- On enter or esc the text just typed will be stored as a history entry
+				- The hotkey will search the history.
+				- Press hotkey f1, hotkey f2, or hotkey f3 to send the first 3 lines
+				- When editing atk.log, use "{enter}" to send a line break and "{!}" to send "!" ("!" is reserved for alt)
+				- Only lines longer than 14 characters will be stored (redefine in settings)
+				- To change the hotkey and other settings, uncomment lines in atk.ini, which should be automatically by the script
 			)
-			ToolTip
 			return
 		} else if (char=ctrX) {
 			MsgBox, 4,, Write to log?
