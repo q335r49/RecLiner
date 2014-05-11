@@ -4,15 +4,13 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 if !FileExist("atk.ini") {
 	FileAppend,
-(
-;[main]
-;Hotkey=#s
-;Examples: ^t (control t) !f5 (alt f5) +f6 (shift f6) See http://www.autohotkey.com/docs/Hotkeys.htm for further documenation
-;Default if none specified: #s
-
-;MinLength=14
-;Strings shorter than this length will not be stored in the archive
-), atk.ini
+	( LTrim
+		[main]
+		;Hotkey=#s
+		;   Examples: ^t (control t) !f5 (alt f5) +f6 (shift f6) See http://www.autohotkey.com/docs/Hotkeys.htm for further documenation (Default #s)
+		;MinLength=14
+		;   Strings shorter than this length will not be stored in the archive (default 14)
+	), atk.ini
 	mainHotkey="#s"
 	min_chars=14
 } else {
@@ -63,100 +61,100 @@ Loop {
 }
 
 StartCompletion:
-	ToolTip, Enter text or ^Editlog ^Help ^Reload ^Writelog e^Xit f1 f2 f3: first 3 lines,10,10
-	matches=0
-	best=
-	CurrentEntry=
-	Loop
-	{
-		Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}
-		if ErrorLevel=EndKey:Backspace
-			StringTrimRight, CurrentEntry, CurrentEntry, 1
-		else if ErrorLevel!=Max
-			break
-		else if (char>ctrZ)
-			CurrentEntry.=char
-		else if (char=ctrW) { 
+ToolTip, Enter text or ^Editlog ^Help ^Reload ^Writelog e^Xit f1 f2 f3: first 3 lines,10,10
+matches=0
+best=
+CurrentEntry=
+Loop
+{
+	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}
+	if ErrorLevel=EndKey:Backspace
+		StringTrimRight, CurrentEntry, CurrentEntry, 1
+	else if ErrorLevel!=Max
+		break
+	else if (char>ctrZ)
+		CurrentEntry.=char
+	else if (char=ctrW) { 
+		Log := FileOpen("atk.log","w `r`n")
+		for key,value in dict
+			Log.WriteLine(value)
+		Log.close()
+		MsgBox % size . " lines written to " . A_ScriptDir . "\atk.log"
+		Tooltip
+		return
+	} else if (char=ctrR)
+		reload
+	else if (char=ctrE) {
+		Run, atk.log
+		ToolTip
+		return
+	} else if (char=ctrH) {
+		ToolTip
+		msgbox,
+		( LTrim
+			Autotextkeeper lets you store and retreive everything you've typed!
+			Hotkey: %mainHotkey%`n
+			- On enter or esc the text just typed will be stored as a history entry
+			- The hotkey will search the history.
+			- Press hotkey f1, hotkey f2, or hotkey f3 to send the first 3 lines
+			- When editing atk.log, use "{enter}" to send a line break and "{!}" to send "!" ("!" is reserved for alt)
+			- Only lines longer than 14 characters will be stored (redefine in settings)
+			- To change the hotkey and other settings, uncomment lines in atk.ini, which should be automatically by the script
+		)
+		return
+	} else if (char=ctrX) {
+		MsgBox, 4,, Write to log?
+		IfMsgBox, Yes
+		{
 			Log := FileOpen("atk.log","w `r`n")
 			for key,value in dict
 				Log.WriteLine(value)
 			Log.close()
 			MsgBox % size . " lines written to " . A_ScriptDir . "\atk.log"
-			Tooltip
-			return
-		} else if (char=ctrR)
-			reload
-		else if (char=ctrE) {
-			Run, atk.log
-			ToolTip
-			return
-		} else if (char=ctrH) {
-			ToolTip
-			msgbox,
-			( LTrim
-				Autotextkeeper lets you store and retreive everything you've typed!
-				Hotkey: %mainHotkey%`n
-				- On enter or esc the text just typed will be stored as a history entry
-				- The hotkey will search the history.
-				- Press hotkey f1, hotkey f2, or hotkey f3 to send the first 3 lines
-				- When editing atk.log, use "{enter}" to send a line break and "{!}" to send "!" ("!" is reserved for alt)
-				- Only lines longer than 14 characters will be stored (redefine in settings)
-				- To change the hotkey and other settings, uncomment lines in atk.ini, which should be automatically by the script
-			)
-			return
-		} else if (char=ctrX) {
-			MsgBox, 4,, Write to log?
-			IfMsgBox, Yes
-			{
-				Log := FileOpen("atk.log","w `r`n")
-				for key,value in dict
-					Log.WriteLine(value)
-				Log.close()
-				MsgBox % size . " lines written to " . A_ScriptDir . "\atk.log"
-			}
-			ExitApp
 		}
-		matchstring=
-		for key,value in dict {
-			StringGetPos,pos,value,%CurrentEntry%
-			if pos=-1
-			{
-				best=
-				bestpos:=pos
-				matchstring=
-			}
-			else if pos
-			{
-				if !best
-				{
-					bestpos:=pos
-					best:=value
-				} else if (StrLen(value)>50)
-					matchstring.=pos+50>StrLen(value)? ("`n..." . SubStr(value,-50)) : ("`n" . SubStr(value,pos,50) . "...")
-			    else
-					matchstring.="`n" . value
-				if ++matches>5
-					break
-			} else {
-				bestpos:=1
-				best:=value
-				break
-			}
-		}
-		if (!matches and !best)
-			Tooltip,% CurrentEntry . ":`n(no matches)",10,10
-		else if (StrLen(best)>50)
-			Tooltip,% CurrentEntry . ":`n" . (bestpos+50>StrLen(best)? "..." . SubStr(best,-50) : SubStr(best,bestpos,50) . "...") . matchstring,10,10
-		else
-			Tooltip,% CurrentEntry . ":`n" . best . matchstring,10,10
+		ExitApp
 	}
-	if ErrorLevel=EndKey:F1
-		Send, % dict[0]
-	else if ErrorLevel=EndKey:F2
-		Send, % dict[1]
-	else if ErrorLevel=EndKey:F3
-		Send, % dict[2]
-	else if ErrorLevel!=EndKey:Escape
-		Send, %best%
-	Tooltip
+	matchstring=
+	for key,value in dict {
+		StringGetPos,pos,value,%CurrentEntry%
+		if pos=-1
+		{
+			best=
+			bestpos:=pos
+			matchstring=
+		}
+		else if pos
+		{
+			if !best
+			{
+				bestpos:=pos
+				best:=value
+			} else if (StrLen(value)>50)
+				matchstring.=pos+50>StrLen(value)? ("`n..." . SubStr(value,-50)) : ("`n" . SubStr(value,pos,50) . "...")
+			else
+				matchstring.="`n" . value
+			if ++matches>5
+				break
+		} else {
+			bestpos:=1
+			best:=value
+			break
+		}
+	}
+	if (!matches and !best)
+		Tooltip,% CurrentEntry . ":`n(no matches)",10,10
+	else if (StrLen(best)>50)
+		Tooltip,% CurrentEntry . ":`n" . (bestpos+50>StrLen(best)? "..." . SubStr(best,-50) : SubStr(best,bestpos,50) . "...") . matchstring,10,10
+	else
+		Tooltip,% CurrentEntry . ":`n" . best . matchstring,10,10
+}
+if ErrorLevel=EndKey:F1
+	Send, % dict[0]
+else if ErrorLevel=EndKey:F2
+	Send, % dict[1]
+else if ErrorLevel=EndKey:F3
+	Send, % dict[2]
+else if ErrorLevel!=EndKey:Escape
+	Send, %best%
+Tooltip
 return
