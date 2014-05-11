@@ -85,8 +85,13 @@ Loop
 	} else if (char=ctrR)
 		reload
 	else if (char=ctrE) {
+		Log := FileOpen("atk.log","w `r`n")
+		for key,value in dict
+			Log.WriteLine(value)
+		Log.close()
+		MsgBox % size . " lines written to " . A_ScriptDir . "\atk.log"
+		Tooltip
 		Run, atk.log
-		ToolTip
 		return
 	} else if (char=ctrH) {
 		ToolTip
