@@ -160,6 +160,6 @@ else if ErrorLevel=EndKey:F2
 else if ErrorLevel=EndKey:F3
 	Send, % dict[2]
 else if ErrorLevel!=EndKey:Escape
-	Send, %best%
+	Send, % best? best : CurrentEntry
 Tooltip
 return
