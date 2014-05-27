@@ -35,6 +35,9 @@ else {
 		dict[size++]:=A_LoopReadLine
 	MsgBox % size . " lines loaded from " . A_ScriptDir . "\atk.log"
 }
+presets:="(Presets:)"
+Loop % size>10? 10 : size
+	presets.="`nF" . A_Index . " " . (StrLen(dict[A_Index])>50? SubStr(dict[A_Index],1,50) . " ..." : dict[A_Index]) 
 Loop {
 	Input, k, V M, {enter}{esc}
 	if (StrLen(k)>min_chars) {
@@ -62,12 +65,12 @@ Loop {
 
 StartCompletion:
 ToolTip, Enter text or ^Editlog ^Help ^Reload ^Writelog e^Xit f1 f2 f3: first 3 lines,10,10
-matches=0
-best=
 CurrentEntry=
+keyarr := Object()
+posarr := Object()
 Loop
 {
-	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}
+	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}
 	if ErrorLevel=EndKey:Backspace
 		StringTrimRight, CurrentEntry, CurrentEntry, 1
 	else if ErrorLevel!=Max
@@ -119,47 +122,57 @@ Loop
 		}
 		ExitApp
 	}
-	matchstring=
-	for key,value in dict {
-		StringGetPos,pos,value,%CurrentEntry%
-		if pos=-1
-		{
-			best=
-			bestpos:=pos
-			matchstring=
-		}
-		else if pos
-		{
-			if !best
+	matches := 1
+	if CurrentEntry
+	{
+		for key,value in dict {
+			StringGetPos,pos,value,%CurrentEntry%
+			if pos!=-1
 			{
-				bestpos:=pos
-				best:=value
-			} else if (StrLen(value)>50)
-				matchstring.=pos+50>StrLen(value)? ("`n..." . SubStr(value,-50)) : ("`n" . SubStr(value,pos,50) . "...")
-			else
-				matchstring.="`n" . value
-			if ++matches>5
+				keyarr[matches] := key
+				posarr[matches] := pos
+				matches++
+			}
+			if matches>10
 				break
-		} else {
-			bestpos:=1
-			best:=value
-			break
 		}
-	}
-	if (!matches and !best)
-		Tooltip,% CurrentEntry . ":`n(no matches)",10,10
-	else if (StrLen(best)>50)
-		Tooltip,% CurrentEntry . ":`n" . (bestpos+50>StrLen(best)? "..." . SubStr(best,-50) : SubStr(best,bestpos,50) . "...") . matchstring,10,10
-	else
-		Tooltip,% CurrentEntry . ":`n" . best . matchstring,10,10
+		if matches>1
+		{
+			disp:=CurrentEntry . ":"
+			Loop %matches%
+				disp.="`nF" . A_Index . " " . (posarr[A_Index]+50>StrLen(dict[keyarr[A_Index]])? "..." . SubStr(dict[keyarr[A_Index]],-50) : SubStr(dict[keyarr[A_Index]],posarr[A_Index],50) . "...")
+			Tooltip, %disp%, 10,10
+		} else
+			Tooltip, % CurrentEntry . "`n(No matches)", 10,10
+	} else
+		Tooltip,%presets%,10,10
 }
 if ErrorLevel=EndKey:F1
-	Send, % dict[0]
+	Send, % matches>1? dict[keyarr[1]] : dict[0]
 else if ErrorLevel=EndKey:F2
-	Send, % dict[1]
+	Send, % matches>2? dict[keyarr[2]] : dict[1]
 else if ErrorLevel=EndKey:F3
-	Send, % dict[2]
+	Send, % matches>3? dict[keyarr[3]] : dict[2]
+else if ErrorLevel=EndKey:F4
+	Send, % matches>4? dict[keyarr[4]] : dict[3]
+else if ErrorLevel=EndKey:F5
+	Send, % matches>5? dict[keyarr[5]] : dict[4]
+else if ErrorLevel=EndKey:F6
+	Send, % matches>6? dict[keyarr[6]] : dict[5]
+else if ErrorLevel=EndKey:F7
+	Send, % matches>7? dict[keyarr[7]] : dict[6]
+else if ErrorLevel=EndKey:F8
+	Send, % matches>8? dict[keyarr[8]] : dict[7]
+else if ErrorLevel=EndKey:F9
+	Send, % matches>9? dict[keyarr[9]] : dict[8]
+else if ErrorLevel=EndKey:F10
+	Send, % matches>10? dict[keyarr[10]] : dict[9]
 else if ErrorLevel!=EndKey:Escape
-	Send, % best? best : CurrentEntry
+	Send, % matches>0? dict[keyarr[0]] : CurrentEntry
 Tooltip
 return
+
+
+
+
+
