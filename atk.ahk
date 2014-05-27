@@ -1,6 +1,7 @@
 #NoEnv
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+StringCaseSense, Off
 
 if !FileExist("atk.ini") {
 	FileAppend,
@@ -35,9 +36,9 @@ else {
 		dict[size++]:=A_LoopReadLine
 	MsgBox % size . " lines loaded from " . A_ScriptDir . "\atk.log"
 }
-presets:="(Presets:)"
+presets:="Presets:"
 Loop % size>10? 10 : size
-	presets.="`nF" . A_Index . " " . (StrLen(dict[A_Index])>50? SubStr(dict[A_Index],1,50) . " ..." : dict[A_Index]) 
+	presets.="`nf" . A_Index . " " . (StrLen(dict[A_Index])>50? SubStr(dict[A_Index],1,50) . " ..." : dict[A_Index]) 
 Loop {
 	Input, k, V M, {enter}{esc}
 	if (StrLen(k)>min_chars) {
@@ -64,15 +65,29 @@ Loop {
 }
 
 StartCompletion:
-ToolTip, Enter text or ^Editlog ^Help ^Reload ^Writelog e^Xit f1 f2 f3: first 3 lines,10,10
+ToolTip,% "(Enter search or ^Edit ^Help ^Reload ^Write e^Xit) " . presets, 10,10
 CurrentEntry=
 keyarr := Object()
-posarr := Object()
+pointer := size-1
 Loop
 {
-	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}
+	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{tab}
 	if ErrorLevel=EndKey:Backspace
 		StringTrimRight, CurrentEntry, CurrentEntry, 1
+	else if ErrorLevel=EndKey:Up
+	{
+		matches=0
+		if pointer>0
+			pointer--
+		CurrentEntry:=dict[pointer]
+	}
+	else if ErrorLevel=EndKey:Down
+	{
+		matches=0
+		if (pointer<size-1)
+			pointer++
+		CurrentEntry:=dict[pointer]
+	}
 	else if ErrorLevel!=Max
 		break
 	else if (char>ctrZ)
@@ -100,14 +115,13 @@ Loop
 		ToolTip
 		msgbox,
 		( LTrim
-			Autotextkeeper lets you store and retreive everything you've typed!
+			Universal command history allows quick access to everything you've typed!
 			Hotkey: %mainHotkey%`n
-			- On enter or esc the text just typed will be stored as a history entry
-			- The hotkey will search the history.
-			- Press hotkey f1, hotkey f2, or hotkey f3 to send the first 3 lines
+			- On enter or esc the preceding typed text will be stored as a 'command line' entry
+			- Pressing the hotkey will search the history.
 			- When editing atk.log, use "{enter}" to send a line break and "{!}" to send "!" ("!" is reserved for alt)
 			- Only lines longer than 14 characters will be stored (redefine in settings)
-			- To change the hotkey and other settings, uncomment lines in atk.ini, which should be automatically by the script
+			- To change the hotkey and other settings, uncomment lines in atk.ini (automatically created)
 		)
 		return
 	} else if (char=ctrX) {
@@ -124,26 +138,18 @@ Loop
 	}
 	matches := 1
 	if CurrentEntry
-	{
+	{	print := CurrentEntry . ":"
 		for key,value in dict {
 			StringGetPos,pos,value,%CurrentEntry%
 			if pos!=-1
-			{
-				keyarr[matches] := key
-				posarr[matches] := pos
-				matches++
+			{	keyarr[matches] := key
+				len:=StrLen(value)
+				print.="`nf" . matches . " " . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
+				if (++matches>10)
+					break
 			}
-			if matches>10
-				break
 		}
-		if matches>1
-		{
-			disp:=CurrentEntry . ":"
-			Loop %matches%
-				disp.="`nF" . A_Index . " " . (posarr[A_Index]+50>StrLen(dict[keyarr[A_Index]])? "..." . SubStr(dict[keyarr[A_Index]],-50) : SubStr(dict[keyarr[A_Index]],posarr[A_Index],50) . "...")
-			Tooltip, %disp%, 10,10
-		} else
-			Tooltip, % CurrentEntry . "`n(No matches)", 10,10
+		Tooltip, % matches>1? print : print . "`n(no matches)",10,10
 	} else
 		Tooltip,%presets%,10,10
 }
@@ -168,11 +174,6 @@ else if ErrorLevel=EndKey:F9
 else if ErrorLevel=EndKey:F10
 	Send, % matches>10? dict[keyarr[10]] : dict[9]
 else if ErrorLevel!=EndKey:Escape
-	Send, % matches>0? dict[keyarr[0]] : CurrentEntry
+	Send, % matches>1? dict[keyarr[1]] : CurrentEntry
 Tooltip
 return
-
-
-
-
-
