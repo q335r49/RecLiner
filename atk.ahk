@@ -65,25 +65,24 @@ Loop {
 }
 
 StartCompletion:
-ToolTip,% "(Enter search or ^Edit ^Help ^Reload ^Write e^Xit) " . presets, 10,10
+ToolTip,(Enter search or ^Edit ^Help ^Reload ^Write e^Xit Up:Prev Down:Next) %presets%,10,10
 CurrentEntry=
 keyarr := Object()
 pointer := size-1
+matches=1
 Loop
 {
 	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{tab}
 	if ErrorLevel=EndKey:Backspace
 		StringTrimRight, CurrentEntry, CurrentEntry, 1
 	else if ErrorLevel=EndKey:Up
-	{
-		matches=0
+	{	matches=0
 		if pointer>0
 			pointer--
 		CurrentEntry:=dict[pointer]
 	}
 	else if ErrorLevel=EndKey:Down
-	{
-		matches=0
+	{	matches=0
 		if (pointer<size-1)
 			pointer++
 		CurrentEntry:=dict[pointer]
@@ -136,9 +135,10 @@ Loop
 		}
 		ExitApp
 	}
-	matches := 1
+	matches:=1
+	print:=CurrentEntry . ":"
 	if CurrentEntry
-	{	print := CurrentEntry . ":"
+	{
 		for key,value in dict {
 			StringGetPos,pos,value,%CurrentEntry%
 			if pos!=-1
