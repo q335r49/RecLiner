@@ -36,9 +36,9 @@ else {
 		dict[size++]:=A_LoopReadLine
 	MsgBox % size . " lines loaded from " . A_ScriptDir . "\atk.log"
 }
-presets:="Presets:"
+presets=
 Loop % size>10? 10 : size
-	presets.="`nf" . A_Index . " " . (StrLen(dict[A_Index])>50? SubStr(dict[A_Index],1,50) . " ..." : dict[A_Index]) 
+	presets.="`nf" . A_Index . " " . (StrLen(dict[A_Index])>50? SubStr(dict[A_Index],1,50) . " ..." : dict[A_Index-1]) 
 Loop {
 	Input, k, V M, {enter}{esc}
 	if (StrLen(k)>min_chars) {
@@ -67,7 +67,7 @@ Loop {
 }
 
 StartCompletion:
-ToolTip,(Enter search or ^Edit ^Help ^Reload ^Write e^Xit Up:Prev Down:Next) %presets%,10,10
+ToolTip,? :%presets%`n^edit ^help ^reload ^write e^xit up:prev dn:next,10,10
 CurrentEntry=
 keyarr := Object()
 pointer := size-1
@@ -138,7 +138,7 @@ Loop
 		ExitApp
 	}
 	matches:=1
-	print:=CurrentEntry . ":"
+	print=? : %CurrentEntry%
 	if CurrentEntry
 	{
 		for key,value in dict {
@@ -153,7 +153,7 @@ Loop
 		}
 		Tooltip, % matches>1? print : print . "`n(no matches)",10,10
 	} else
-		Tooltip,%presets%,10,10
+		Tooltip,? : %presets%,10,10
 }
 if ErrorLevel=EndKey:F1
 	Send, % matches>1? dict[keyarr[1]] : dict[0]
