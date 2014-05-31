@@ -27,6 +27,8 @@ ctrA :=chr(1)
 ctrE :=chr(5)
 ctrX :=chr(24)
 ctrZ :=chr(26)
+ctrC :=chr(3)
+ctrV :=chr(22)
 dict :=Object()
 size :=0
 if !FileExist("atk.log")
@@ -67,7 +69,7 @@ Loop {
 }
 
 StartCompletion:
-ToolTip,? :%presets%`n^edit ^help ^reload ^write e^xit up:prev dn:next,10,10
+ToolTip,? :%presets%`n^edit ^help ^reload ^v:paste ^write e^xit up:prev dn:next,10,10
 CurrentEntry=
 keyarr := Object()
 pointer := size
@@ -91,6 +93,8 @@ Loop
 		break
 	else if (char>ctrZ)
 		CurrentEntry.=char
+	else if (char=ctrV)
+		CurrentEntry=%clipboard%
 	else if (char=ctrW) { 
 		Log := FileOpen("atk.log","w `r`n")
 		for key,value in dict
@@ -174,6 +178,13 @@ else if ErrorLevel=EndKey:F9
 else if ErrorLevel=EndKey:F10
 	Send, % matches>10? dict[keyarr[10]] : dict[9]
 else if ErrorLevel!=EndKey:Escape
-	Send, % matches>1? dict[keyarr[1]] : CurrentEntry
+{	if matches>1
+		Send,% dict[keyarr[1]]
+	else {
+		Send,% CurrentEntry
+		dict[size]:=CurrentEntry
+		size++
+	}
+}
 Tooltip
 return
