@@ -70,7 +70,7 @@ StartCompletion:
 ToolTip,? :%presets%`n^edit ^help ^reload ^write e^xit up:prev dn:next,10,10
 CurrentEntry=
 keyarr := Object()
-pointer := size-1
+pointer := size
 matches=1
 Loop
 {
@@ -79,14 +79,12 @@ Loop
 		StringTrimRight, CurrentEntry, CurrentEntry, 1
 	else if ErrorLevel=EndKey:Up
 	{	matches=0
-		if pointer>0
-			pointer--
+		pointer:=pointer>0? pointer-1 : 0
 		CurrentEntry:=dict[pointer]
 	}
 	else if ErrorLevel=EndKey:Down
 	{	matches=0
-		if (pointer<size-1)
-			pointer++
+		pointer:=pointer<size-1? pointer+1 : size-1
 		CurrentEntry:=dict[pointer]
 	}
 	else if ErrorLevel!=Max
