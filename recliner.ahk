@@ -166,10 +166,9 @@ Loop
 	Tooltip, % matches>1? print : print . "`n   --- no matches ---`nf1..f10 - add to presets`nenter - append to presets & send`ntab - append to presets",10,10
 }
 if (SubStr(ErrorLevel,1,8)="EndKey:F") {
-	MsgBox %Entry%:%ErrorLevel%:%matches%
 	fN:=SubStr(ErrorLevel,9)
 	if fN<=12
-		if (matches>1 || Entry="")
+		if (matches>1 || !Entry)
 			Send, % matches>fN? keyarr[fN] : pre[fN-1]
 		else {
 			pre[fN-1]:=Entry
