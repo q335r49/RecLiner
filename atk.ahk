@@ -154,7 +154,6 @@ Loop
 			}
 		}
 		if matches<=10
-		{
 			for key,value in log {
 				StringGetPos,pos,value,%CurrentEntry%
 				if pos!=-1
@@ -165,13 +164,12 @@ Loop
 						break
 				}
 			}
-		}
 		Tooltip, % matches>1? print : print . "`n(no matches)`nf1..f10 to add to presets`nenter: append to presets & send`ntab: append to presets",10,10
 	} else
 		Tooltip,%presets%,10,10
 }
 if ErrorLevel=EndKey:F1
-	if matches>1
+	if (matches>1 || !CurrentEntry)
 		Send, % matches>1? keyarr[1] : pre[0]
 	else {
 		pre[0]:=CurrentEntry
@@ -181,7 +179,7 @@ if ErrorLevel=EndKey:F1
 		GoSub, StartCompletion
 	}
 else if ErrorLevel=EndKey:F2
-	if matches>1
+	if (matches>1 || !CurrentEntry)
 		Send, % matches>2? keyarr[2] : pre[1]
 	else {
 		pre[1]:=CurrentEntry
@@ -191,7 +189,7 @@ else if ErrorLevel=EndKey:F2
 		GoSub, StartCompletion
 	}
 else if ErrorLevel=EndKey:F3
-	if matches>1
+	if (matches>1 || !CurrentEntry)
 		Send, % matches>3? keyarr[3] : pre[2]
 	else {
 		pre[2]:=CurrentEntry
@@ -201,7 +199,7 @@ else if ErrorLevel=EndKey:F3
 		GoSub, StartCompletion
 	}
 else if ErrorLevel=EndKey:F4
-	if matches>1
+	if (matches>1 || !CurrentEntry)
 		Send, % matches>4? keyarr[4] : pre[3]
 	else {
 		pre[3]:=CurrentEntry
@@ -211,7 +209,7 @@ else if ErrorLevel=EndKey:F4
 		GoSub, StartCompletion
 	}
 else if ErrorLevel=EndKey:F5
-	if matches>1
+	if (matches>1 || !CurrentEntry)
 		Send, % matches>5? keyarr[5] : pre[4]
 	else {
 		pre[4]:=CurrentEntry
@@ -221,7 +219,7 @@ else if ErrorLevel=EndKey:F5
 		GoSub, StartCompletion
 	}
 else if ErrorLevel=EndKey:F6
-	if matches>1
+	if (matches>1 || !CurrentEntry)
 		Send, % matches>6? keyarr[6] : pre[5]
 	else {
 		pre[5]:=CurrentEntry
@@ -231,7 +229,7 @@ else if ErrorLevel=EndKey:F6
 		GoSub, StartCompletion
 	}
 else if ErrorLevel=EndKey:F7
-	if matches>1
+	if (matches>1 || !CurrentEntry)
 		Send, % matches>7? keyarr[7] : pre[6]
 	else {
 		pre[6]:=CurrentEntry
@@ -241,7 +239,7 @@ else if ErrorLevel=EndKey:F7
 		GoSub, StartCompletion
 	}
 else if ErrorLevel=EndKey:F8
-	if matches>1
+	if (matches>1 || !CurrentEntry)
 		Send, % matches>8? keyarr[8] : pre[7]
 	else {
 		pre[7]:=CurrentEntry
@@ -251,7 +249,7 @@ else if ErrorLevel=EndKey:F8
 		GoSub, StartCompletion
 	}
 else if ErrorLevel=EndKey:F9
-	if matches>1
+	if (matches>1 || !CurrentEntry)
 		Send, % matches>9? keyarr[9] : pre[8]
 	else {
 		pre[8]:=CurrentEntry
@@ -261,7 +259,7 @@ else if ErrorLevel=EndKey:F9
 		GoSub, StartCompletion
 	}
 else if ErrorLevel=EndKey:F10
-	if matches>1
+	if (matches>1 || !CurrentEntry)
 		Send, % matches>10? keyarr[10] : pre[9]
 	else {
 		pre[9]:=CurrentEntry
