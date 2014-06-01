@@ -20,11 +20,9 @@ if !FileExist("atk.ini") {
 }
 Hotkey,%mainHotkey%,StartCompletion
 shDel:=chr(127)
-ctrR :=chr(18)
 ctrW :=chr(23)
 ctrH :=chr(8)
 ctrA :=chr(1)
-ctrE :=chr(5)
 ctrX :=chr(24)
 ctrZ :=chr(26)
 ctrV :=chr(22)
@@ -40,6 +38,14 @@ MsgBox %logsize% lines read from %A_ScriptDir%\atk.log`n%presize% lines read fro
 presets=
 Loop % presize>10? 10 : presize
 	presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
+Menu, Tray, NoStandard
+Menu, Tray, add, &Help, MenuHelp
+Menu, Tray, add, &Reload, MenuReload
+Menu, Tray, add
+Menu, Tray, add, &Edit log..., MenuEditLog
+Menu, Tray, add, &Edit presets..., MenuEditPre
+Menu, Tray, add
+Menu, Tray, add, &Exit..., MenuExit
 Loop {
 	Input, k, V M, {enter}{esc}{tab}
 	if (StrLen(k)>min_chars) {
@@ -66,8 +72,53 @@ Loop {
 	}
 }
 
+MenuHelp:
+	MsgBox,
+	( LTrim
+		Universal command history allows quick access to everything you've typed!
+		Hotkey: %mainHotkey%`n
+		- On enter, esc, or tab the preceding typed text will be stored as a 'command line' entry
+		- Pressing the hotkey will search the history.
+		- When editing atk.log, use "{enter}" to send a line break and "{!}" to send "!" ("!" is reserved for alt)
+		- Only lines longer than 14 characters will be stored (redefine in settings)
+		- To change the hotkey and other settings, uncomment lines in atk.ini (automatically created)
+	)
+	return
+MenuReload:
+	reload
+MenuEditPre:
+MenuEditLog:
+	File := FileOpen("atk.log","w `r`n")
+	for key,value in log
+		File.WriteLine(value)
+	File.close()
+	File := FileOpen("atkpresets.log","w `r`n")
+	for key,value in pre
+		File.WriteLine(value)
+	File.close()
+	MsgBox %logsize% lines written to %A_ScriptDir%\atk.log`n%presize% lines written to %A_ScriptDir%\atkpresets.log
+	Run, % A_ThisMenuItem="&Edit presets..."? "atkpresets.log" : "atk.log"
+	return
+MenuExit:
+	MsgBox, 3,, Write to log?
+	IfMsgBox, Yes
+	{
+		File := FileOpen("atk.log","w `r`n")
+		for key,value in log
+			File.WriteLine(value)
+		File.close()
+		File := FileOpen("atkpresets.log","w `r`n")
+		for key,value in pre
+			File.WriteLine(value)
+		File.close()
+		MsgBox % logsize . " lines written to " . A_ScriptDir . "\atk.log`n" . presize . " lines written to " . A_ScriptDir . "\atkpresets.log"
+	}
+	IfMsgBox, Cancel
+		return
+	ExitApp
+
 StartCompletion:
-ToolTip,Enter search (^Edit ^Help ^Reload ^V:paste ^Write e^Xit up:prev dn:next)%presets%,10,10
+ToolTip,Enter search (^V:paste ^Write)%presets%,10,10
 CurrentEntry=
 keyarr := Object()
 matches=1
@@ -94,60 +145,6 @@ Loop
 		MsgBox %logsize% lines written to %A_ScriptDir%\atk.log`n%presize% lines written to %A_ScriptDir%\atkpresets.log
 		Tooltip
 		return
-	} else if (char=ctrR) {
-		File := FileOpen("atk.log","w `r`n")
-		for key,value in log
-		{
-			File.WriteLine(value)
-			MsgBox,%value%
-		}
-		File.close()
-		File := FileOpen("atkpresets.log","w `r`n")
-		for key,value in pre
-			File.WriteLine(value)
-		File.close()
-		reload
-	} else if (char=ctrE) {
-		File := FileOpen("atk.log","w `r`n")
-		for key,value in log
-			File.WriteLine(value)
-		File.close()
-		File := FileOpen("atkpresets.log","w `r`n")
-		for key,value in pre
-			File.WriteLine(value)
-		File.close()
-		MsgBox %logsize% lines written to %A_ScriptDir%\atk.log`n%presize% lines written to %A_ScriptDir%\atkpresets.log
-		Tooltip
-		Run, atk.log
-		return
-	} else if (char=ctrH) {
-		ToolTip
-		MsgBox,
-		( LTrim
-			Universal command history allows quick access to everything you've typed!
-			Hotkey: %mainHotkey%`n
-			- On enter or esc the preceding typed text will be stored as a 'command line' entry
-			- Pressing the hotkey will search the history.
-			- When editing atk.log, use "{enter}" to send a line break and "{!}" to send "!" ("!" is reserved for alt)
-			- Only lines longer than 14 characters will be stored (redefine in settings)
-			- To change the hotkey and other settings, uncomment lines in atk.ini (automatically created)
-		)
-		return
-	} else if (char=ctrX) {
-		MsgBox, 4,, Write to log?
-		IfMsgBox, Yes
-		{
-			File := FileOpen("atk.log","w `r`n")
-			for key,value in log
-				File.WriteLine(value)
-			File.close()
-			File := FileOpen("atkpresets.log","w `r`n")
-			for key,value in pre
-				File.WriteLine(value)
-			File.close()
-			MsgBox % logsize . " lines written to " . A_ScriptDir . "\atk.log`n" . presize . " lines written to " . A_ScriptDir . "\atkpresets.log"
-		}
-		ExitApp
 	}
 	matches:=1
 	print=%CurrentEntry%
@@ -205,6 +202,8 @@ else if ErrorLevel!=EndKey:Escape
 	else {
 		Send,% CurrentEntry
 		pre[presize++]:=CurrentEntry
+		if presize<=10
+			presets.="`nf" . presize . " " . CurrentEntry
 	}
 }
 Tooltip
