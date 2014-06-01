@@ -169,7 +169,7 @@ if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 	fN:=SubStr(ErrorLevel,9)
 	if fN<=12
 		if (matches>1 || !Entry)
-			Send, % matches>fN? keyarr[fN] : pre[fN-1]
+			Send, % (matches>fN? keyarr[fN] : pre[fN-1])
 		else {
 			pre[fN-1]:=Entry
 			presets=
@@ -180,9 +180,10 @@ if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 } else if ErrorLevel!=EndKey:Escape
 	if matches>1
 		Send,% keyarr[1]
-	else
+	else {
 		pre[preL++]:=Entry
-	if ErrorLevel=EndKey:Enter
-		Send,% Entry
+		if ErrorLevel=EndKey:Enter
+			Send,% Entry
+	}
 Tooltip
 return
