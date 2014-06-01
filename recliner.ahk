@@ -3,7 +3,7 @@ SendMode Input  ; Recommended for new scripts due to its superior speed and reli
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 StringCaseSense, Off
 
-if !FileExist("atk.ini") {
+if !FileExist("recliner.ini") {
 	FileAppend,
 	( LTrim
 		[main]
@@ -11,12 +11,12 @@ if !FileExist("atk.ini") {
 		;   Examples: ^t (control t) !f5 (alt f5) +f6 (shift f6) See http://www.autohotkey.com/docs/Hotkeys.htm for further documenation (Default #s)
 		;MinLength=14
 		;   Strings shorter than this length will not be stored in the archive (default 14)
-	), atk.ini
+	), recliner.ini
 	mainHotkey="#s"
 	min_chars=14
 } else {
-	IniRead, mainHotkey, atk.ini, main, Hotkey, #s
-	IniRead, min_chars, atk.ini, main, MinLength, 14
+	IniRead, mainHotkey, recliner.ini, main, Hotkey, #s
+	IniRead, min_chars, recliner.ini, main, MinLength, 14
 }
 Hotkey,%mainHotkey%,StartCompletion
 shDel:=chr(127)
@@ -30,7 +30,7 @@ pre:=Object()
 logL:=0
 preL:=0
 logsection=
-Loop, Read, atk.log
+Loop, Read, recliner.log
 	if logsection
 		log[logL++]:=A_LoopReadLine
 	else if A_LoopReadLine = ### End Presets ###
@@ -74,14 +74,14 @@ Loop {
 }
 
 WriteLog:
-	File := FileOpen("atk.log","w `r`n")
+	File := FileOpen("recliner.log","w `r`n")
 	for key,value in pre
 		File.WriteLine(value)
 	File.WriteLine("### End Presets ###")
 	for key,value in log
 		File.WriteLine(value)
 	File.close()
-	MsgBox % logL+preL . " lines written to %A_ScriptDir%\atk.log"
+	MsgBox % logL+preL . " lines written to %A_ScriptDir%\recliner.log"
 	return
 MenuReload:
 	reload
@@ -89,7 +89,7 @@ MenuNull:
 	return
 MenuEditLog:
 	Gosub, WriteLog
-	Run, atk.log
+	Run, recliner.log
 	return
 MenuExit:
 	MsgBox, 3,, Write to log?
@@ -128,10 +128,10 @@ Loop
 			set, and since presets appear first in the log and in search results this may be a good way
 			to differentiate between autotext and log entries.`n
 			Some tips
-			* When editing atk.log, use {enter} to send a line break and {!} to send "!".
+			* When editing recliner.log, use {enter} to send a line break and {!} to send "!".
 			See www.autohotkey.com/docs/commands/Send.htm for a list of special characters.
 			* Only lines longer than %min_chars% characters will be stored.
-			* To change the settings, edit the automatically generated init file atk.ini
+			* To change the settings, edit the automatically generated init file recliner.ini
 		),10,10
 		continue
 	} else if (char=ctrV)
