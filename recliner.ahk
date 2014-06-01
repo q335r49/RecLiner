@@ -40,7 +40,7 @@ presets=
 Loop 12
 	presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
 Menu, Tray, NoStandard
-Menu, Tray, add, Current &Hotkey: %mainHotkey%, MenuEditSettings
+Menu, Tray, add, Set &hotkey (%mainHotkey%), MenuEditSettings
 Menu, Tray, add, &Edit log, MenuEditLog
 Menu, Tray, add, &Reload from log, MenuReload
 Menu, Tray, add
@@ -97,7 +97,8 @@ MenuExit:
 	ExitApp
 
 uiLoop:
-ToolTip,Enter search (^Help ^V:paste ^Write)%presets%,10,10
+ToolTip,> `n^H help ^V paste ^W write%presets%,10,10
+matches:=1
 Entry=
 keyarr := Object()
 Loop
@@ -114,15 +115,15 @@ Loop
 			RecLiner lets you record and recall every line you type! When you press Enter, Esc, or Tab,
 			the line just typed will be stored in a searchable history. Useful for:
 			* Remembering addresses, commands, or form data
-			* A universal command line history for various command line interfaces
+			* A unified command line history for command line interfaces
 			* Keeping a log of online chats
 			* Building a library of often used fragments or quotes`n
 			Pressing the hotkey will open a search prompt. Pressing f1 ... f10 on an empty prompt will
-			send the first 10 entries, the 'presets'. You can modify presets by typing or pasting text
-			into the search prompt and hitting the appropriate function key. More than 10 presets can be
-			set, and since presets appear first in the log and in search results this may be a good way
-			to differentiate between autotext and log entries.`n
-			Some tips
+			send the first 12 entries, the 'presets'. You can modify presets by typing or pasting text
+			into the search prompt and hitting the appropriate function key. More than 12 presets can be
+			set, but the inaccessible presets can be serve to differentiate between autotext and log
+			entries: they appear first in recliner.log and search results.`n
+			Tips
 			* When editing recliner.log, use {enter} to send a line break and {!} to send "!".
 			See www.autohotkey.com/docs/commands/Send.htm for a list of special characters.
 			* Only lines longer than %min_chars% characters will be stored.
@@ -136,11 +137,11 @@ Loop
 		return
 	}
 	if !Entry
-	{	Tooltip,%presets%,10,10
+	{	Tooltip,> %presets%,10,10
 		continue
 	}
 	matches:=1
-	print=%Entry%
+	print=> %Entry%
 	for key,value in pre {
 		StringGetPos,pos,value,%Entry%
 		if (pos=-1)
@@ -162,12 +163,13 @@ Loop
 			if (++matches>12)
 				break
 		}
-	Tooltip, % matches>1? print : print . "`n(no matches)`nf1..f10 to add to presets`nenter: append to presets & send`ntab: append to presets",10,10
+	Tooltip, % matches>1? print : print . "`n   --- no matches ---`nf1..f10 - add to presets`nenter - append to presets & send`ntab - append to presets",10,10
 }
 if (SubStr(ErrorLevel,1,8)="EndKey:F") {
+	MsgBox %Entry%:%ErrorLevel%:%matches%
 	fN:=SubStr(ErrorLevel,9)
 	if fN<=12
-		if (matches>1 || !Entry)
+		if (matches>1 || Entry="")
 			Send, % matches>fN? keyarr[fN] : pre[fN-1]
 		else {
 			pre[fN-1]:=Entry
