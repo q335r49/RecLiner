@@ -27,7 +27,6 @@ ctrA :=chr(1)
 ctrE :=chr(5)
 ctrX :=chr(24)
 ctrZ :=chr(26)
-ctrC :=chr(3)
 ctrV :=chr(22)
 dict :=Object()
 size :=0
@@ -42,7 +41,7 @@ presets=
 Loop % size>10? 10 : size
 	presets.="`nf" . A_Index . " " . (StrLen(dict[A_Index])>50? SubStr(dict[A_Index],1,50) . " ..." : dict[A_Index-1]) 
 Loop {
-	Input, k, V M, {enter}{esc}
+	Input, k, V M, {enter}{esc}{tab}
 	if (StrLen(k)>min_chars) {
 		out=
 		Loop,Parse,k
@@ -69,7 +68,7 @@ Loop {
 }
 
 StartCompletion:
-ToolTip,? :%presets%`n^edit ^help ^reload ^v:paste ^write e^xit up:prev dn:next,10,10
+ToolTip,Enter search (^Edit ^Help ^Reload ^V:paste ^Write e^Xit up:prev dn:next)%presets%,10,10
 CurrentEntry=
 keyarr := Object()
 pointer := size
@@ -140,7 +139,7 @@ Loop
 		ExitApp
 	}
 	matches:=1
-	print=? : %CurrentEntry%
+	print=%CurrentEntry%
 	if CurrentEntry
 	{
 		for key,value in dict {
@@ -155,7 +154,7 @@ Loop
 		}
 		Tooltip, % matches>1? print : print . "`n(no matches)",10,10
 	} else
-		Tooltip,? : %presets%,10,10
+		Tooltip,%presets%,10,10
 }
 if ErrorLevel=EndKey:F1
 	Send, % matches>1? dict[keyarr[1]] : dict[0]
