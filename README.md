@@ -1,4 +1,4 @@
-#Recliner
+#RecLiner
 RecLiner lets you record and recall every line you type! When you press <kbd>enter</kbd>, <kbd>esc</kbd>, or <kbd>tab</kbd>, the line just typed will be stored in a searchable history. Useful for:
 * Remembering addresses, commands, or form data
 * A universal command line history for various command line interfaces
