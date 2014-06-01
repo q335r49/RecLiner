@@ -8,8 +8,7 @@ ctrH:=chr(8)
 ctrA:=chr(1)
 ctrZ:=chr(26)
 ctrV:=chr(22)
-
-if !FileExist("recliner.ini") {
+if !FileExist("recliner.ini")
 	FileAppend,
 	( LTrim
 		[main]
@@ -18,12 +17,9 @@ if !FileExist("recliner.ini") {
 		;MinLength=14
 		;   Strings shorter than this length will not be stored in the archive (default 14)
 	), recliner.ini
-	mainHotkey=f4
-	min_chars=14
-} else {
-	IniRead, mainHotkey, recliner.ini, main, Hotkey, f4
-	IniRead, min_chars, recliner.ini, main, MinLength, 14
-}
+
+IniRead, mainHotkey, recliner.ini, main, Hotkey, f4
+IniRead, min_chars, recliner.ini, main, MinLength, 14
 Hotkey,%mainHotkey%,uiLoop
 log:=Object()
 pre:=Object()
@@ -44,11 +40,11 @@ presets=
 Loop 12
 	presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
 Menu, Tray, NoStandard
-Menu, Tray, add, Current Hotkey: %mainHotkey%, MenuEditSettings
+Menu, Tray, add, Current &Hotkey: %mainHotkey%, MenuEditSettings
 Menu, Tray, add, &Edit log, MenuEditLog
 Menu, Tray, add, &Reload from log, MenuReload
 Menu, Tray, add
-Menu, Tray, add, &Exit, MenuExit
+Menu, Tray, add, E&xit, MenuExit
 Loop {
 	Input, k, V M, {enter}{esc}{tab}
 	if (StrLen(k)>min_chars) {
@@ -170,15 +166,16 @@ Loop
 }
 if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 	fN:=SubStr(ErrorLevel,9)
-	if (matches>1 || !Entry)
-		Send, % matches>fN? keyarr[fN] : pre[fN-1]
-	else {
-		pre[fN-1]:=Entry
-		presets=
-		Loop 12
-			presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
-		GoSub, uiLoop
-	}
+	if fN<=12
+		if (matches>1 || !Entry)
+			Send, % matches>fN? keyarr[fN] : pre[fN-1]
+		else {
+			pre[fN-1]:=Entry
+			presets=
+			Loop 12
+				presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
+			GoSub, uiLoop
+		}
 } else if ErrorLevel!=EndKey:Escape
 	if matches>1
 		Send,% keyarr[1]
