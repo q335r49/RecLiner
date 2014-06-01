@@ -26,20 +26,26 @@ ctrA :=chr(1)
 ctrZ :=chr(26)
 ctrV :=chr(22)
 log :=Object()
-snp:=Object()
+pre:=Object()
 logsize :=0
-presize :=0
+presz :=0
+logsection=
 Loop, Read, atk.log
-	log[logsize++]:=A_LoopReadLine
-Loop, Read, snippets.log
-	snp[presize++]:=A_LoopReadLine
-MsgBox %logsize% lines read from %A_ScriptDir%\atk.log`n%presize% lines read from %A_ScriptDir%\snippets.log
-snippets=
-Loop % presize>10? 10 : presize
-	snippets.="`nf" . A_Index . " " . (StrLen(snp[A_Index])>50? SubStr(snp[A_Index],1,50) . " ..." : snp[A_Index-1]) 
+	if logsection
+		log[logsize++]:=A_LoopReadLine
+	else if A_LoopReadLine = ### End Presets ###
+		logsection=1
+	else
+		pre[presz++]:=A_LoopReadLine
+MsgBox % logsize+presz . " lines read from " . A_ScriptDir
+while presz < 10
+	pre[presz++]:="Preset " . presz
+presets=
+Loop 10
+	presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
 Menu, Tray, NoStandard
+Menu, Tray, add, Current Hotkey: %mainHotkey%, MenuNull
 Menu, Tray, add, &Edit log..., MenuEditLog
-Menu, Tray, add, &Edit snippets..., MenuEditPre
 Menu, Tray, add, &Reload from log, MenuReload
 Menu, Tray, add
 Menu, Tray, add, &Exit..., MenuExit
@@ -69,41 +75,36 @@ Loop {
 	}
 }
 
-MenuReload:
-	reload
-MenuEditPre:
-MenuEditLog:
+WriteLog:
 	File := FileOpen("atk.log","w `r`n")
+	for key,value in pre
+		File.WriteLine(value)
+	File.WriteLine("### End Presets ###")
 	for key,value in log
 		File.WriteLine(value)
 	File.close()
-	File := FileOpen("snippets.log","w `r`n")
-	for key,value in snp
-		File.WriteLine(value)
-	File.close()
-	MsgBox %logsize% lines written to %A_ScriptDir%\atk.log`n%presize% lines written to %A_ScriptDir%\snippets.log
-	Run, % A_ThisMenuItem="&Edit snippets..."? "snippets.log" : "atk.log"
+	MsgBox % logsize+presz . " lines written to %A_ScriptDir%\atk.log"
+	return
+MenuNull:
+	return
+MenuReload:
+	reload
+	return
+MenuEditPre:
+MenuEditLog:
+	Gosub, WriteLog
+	Run, atk.log
 	return
 MenuExit:
 	MsgBox, 3,, Write to log?
 	IfMsgBox, Yes
-	{
-		File := FileOpen("atk.log","w `r`n")
-		for key,value in log
-			File.WriteLine(value)
-		File.close()
-		File := FileOpen("snippets.log","w `r`n")
-		for key,value in snp
-			File.WriteLine(value)
-		File.close()
-		MsgBox % logsize . " lines written to " . A_ScriptDir . "\atk.log`n" . presize . " lines written to " . A_ScriptDir . "\snippets.log"
-	}
+		Gosub, WriteLog
 	IfMsgBox, Cancel
 		return
 	ExitApp
 
 StartCompletion:
-ToolTip,Enter search (^Help ^V:paste ^Write)%snippets%,10,10
+ToolTip,Enter search (^Help ^V:paste ^Write)%presets%,10,10
 CurrentEntry=
 keyarr := Object()
 matches=1
@@ -119,38 +120,34 @@ Loop
 	else if (char=ctrH) {
 		Tooltip,
 		( LTrim
-			Universal Command History lets you quickly access everything you've typed! Every
-			time you press ENTER, ESC, or TAB, the line just typed will be stored in the history,
-			which you can search by pressing the hotkey. (Current hotkey: %mainHotkey%)`n
-			Tips: # When editing atk.log, use "{enter}" to send a line break and "{!}" to send "!".
+			ComLiHist ('Comeliest' or 'Command line history' .. I know, it's a stretch!) keeps
+			a record of every line you type. When you press ENTER, ESC, or TAB, the line just
+			typed will be stored in the history, which you can search by pressing the hotkey.
+			It's useful for remembering complicated command line entries, keeping a record of
+			online chats, and as a library of quotes.`n
+			Pressing hotkey f1 ... f10 will send the first 10 entries, the 'presets'. You can modify
+			presets by typing or pasting text into the search prompt and hitting the appropriate
+			function key. More than 10 presets can be set, and since presets appear first in the
+			log and in search results this may be a good way to differentiate between autotext
+			and log entries.`n
+			Some tips - When editing atk.log, use {enter} to send a line break and {!} to send "!".
 			See www.autohotkey.com/docs/commands/Send.htm for a list of special characters.
-			# Only lines longer than %min_chars% characters will be stored.
-			# To change the settings, edit the automatically generated init file atk.ini
-			# Snippets allow for an easy way to access the first 10 entries and provide a way
-			to keep frequently typed text separate from log entries. Snippets can be set simply
-			by typing it into the search prompt or by editing snippets.log
+			- Only lines longer than %min_chars% characters will be stored.
+			- To change the settings, edit the automatically generated init file atk.ini
 		),10,10
 		continue
 	} else if (char=ctrV)
 		CurrentEntry=%clipboard%
 	else if (char=ctrW) { 
-		File := FileOpen("atk.log","w `r`n")
-		for key,value in log
-			File.WriteLine(value)
-		File.close()
-		File := FileOpen("snippets.log","w `r`n")
-		for key,value in snp
-			File.WriteLine(value)
-		File.close()
+		Gosub, WriteLog
 		Tooltip
-		MsgBox %logsize% lines written to %A_ScriptDir%\atk.log`n%presize% lines written to %A_ScriptDir%\snippets.log
 		return
 	}
 	matches:=1
 	print=%CurrentEntry%
 	if CurrentEntry
 	{
-		for key,value in snp {
+		for key,value in pre {
 			StringGetPos,pos,value,%CurrentEntry%
 			if pos!=-1
 			{	keyarr[matches] := value
@@ -173,39 +170,119 @@ Loop
 				}
 			}
 		}
-		Tooltip, % matches>1? print : print . "`n(no matches)`nENTER: add to snippets & send`nTAB: add to snippets",10,10
+		Tooltip, % matches>1? print : print . "`n(no matches)`nf1..f10 to add to presets`nenter: append to presets & send`ntab: append to presets",10,10
 	} else
-		Tooltip,%snippets%,10,10
+		Tooltip,%presets%,10,10
 }
 if ErrorLevel=EndKey:F1
-	Send, % matches>1? keyarr[1] : snp[0]
+	if matches>1
+		Send, % matches>1? keyarr[1] : pre[0]
+	else {
+		pre[0]:=CurrentEntry
+		presets=
+		Loop 10
+			presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
+		GoSub, StartCompletion
+	}
 else if ErrorLevel=EndKey:F2
-	Send, % matches>2? keyarr[2] : snp[1]
+	if matches>1
+		Send, % matches>2? keyarr[2] : pre[1]
+	else {
+		pre[1]:=CurrentEntry
+		presets=
+		Loop 10
+			presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
+		GoSub, StartCompletion
+	}
 else if ErrorLevel=EndKey:F3
-	Send, % matches>3? keyarr[3] : snp[2]
+	if matches>1
+		Send, % matches>3? keyarr[3] : pre[2]
+	else {
+		pre[2]:=CurrentEntry
+		presets=
+		Loop 10
+			presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
+		GoSub, StartCompletion
+	}
 else if ErrorLevel=EndKey:F4
-	Send, % matches>4? keyarr[4] : snp[3]
+	if matches>1
+		Send, % matches>4? keyarr[4] : pre[3]
+	else {
+		pre[3]:=CurrentEntry
+		presets=
+		Loop 10
+			presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
+		GoSub, StartCompletion
+	}
 else if ErrorLevel=EndKey:F5
-	Send, % matches>5? keyarr[5] : snp[4]
+	if matches>1
+		Send, % matches>5? keyarr[5] : pre[4]
+	else {
+		pre[4]:=CurrentEntry
+		presets=
+		Loop 10
+			presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
+		GoSub, StartCompletion
+	}
 else if ErrorLevel=EndKey:F6
-	Send, % matches>6? keyarr[6] : snp[5]
+	if matches>1
+		Send, % matches>6? keyarr[6] : pre[5]
+	else {
+		pre[5]:=CurrentEntry
+		presets=
+		Loop 10
+			presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
+		GoSub, StartCompletion
+	}
 else if ErrorLevel=EndKey:F7
-	Send, % matches>7? keyarr[7] : snp[6]
+	if matches>1
+		Send, % matches>7? keyarr[7] : pre[6]
+	else {
+		pre[6]:=CurrentEntry
+		presets=
+		Loop 10
+			presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
+		GoSub, StartCompletion
+	}
 else if ErrorLevel=EndKey:F8
-	Send, % matches>8? keyarr[8] : snp[7]
+	if matches>1
+		Send, % matches>8? keyarr[8] : pre[7]
+	else {
+		pre[7]:=CurrentEntry
+		presets=
+		Loop 10
+			presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
+		GoSub, StartCompletion
+	}
 else if ErrorLevel=EndKey:F9
-	Send, % matches>9? keyarr[9] : snp[8]
+	if matches>1
+		Send, % matches>9? keyarr[9] : pre[8]
+	else {
+		pre[8]:=CurrentEntry
+		presets=
+		Loop 10
+			presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
+		GoSub, StartCompletion
+	}
 else if ErrorLevel=EndKey:F10
-	Send, % matches>10? keyarr[10] : snp[9]
+	if matches>1
+		Send, % matches>10? keyarr[10] : pre[9]
+	else {
+		pre[9]:=CurrentEntry
+		presets=
+		Loop 10
+			presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
+		GoSub, StartCompletion
+	}
 else if ErrorLevel!=EndKey:Escape
 {	if matches>1
 		Send,% keyarr[1]
 	else {
 		if ErrorLevel=EndKey:Enter
 			Send,% CurrentEntry
-		snp[presize++]:=CurrentEntry
-		if presize<=10
-			snippets.="`nf" . presize . " " . CurrentEntry
+		pre[presz++]:=CurrentEntry
+		if presz<=10
+			presets.="`nf" . presz . " " . CurrentEntry
 	}
 }
 Tooltip
