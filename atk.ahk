@@ -116,20 +116,22 @@ Loop
 	else if (char=ctrH) {
 		Tooltip,
 		( LTrim
-			ComLiHist ('Comeliest' or 'Command line history' .. I know, it's a stretch!) keeps
-			a record of every line you type. When you press ENTER, ESC, or TAB, the line just
-			typed will be stored in the history, which you can search by pressing the hotkey.
-			It's useful for remembering complicated command line entries, keeping a record of
-			online chats, and as a library of quotes.`n
-			Pressing hotkey f1 ... f10 will send the first 10 entries, the 'presets'. You can modify
-			presets by typing or pasting text into the search prompt and hitting the appropriate
-			function key. More than 10 presets can be set, and since presets appear first in the
-			log and in search results this may be a good way to differentiate between autotext
-			and log entries.`n
-			Some tips - When editing atk.log, use {enter} to send a line break and {!} to send "!".
+			RecLiner lets you record and recall every line you type! When you press Enter, Esc, or Tab,
+			the line just typed will be stored in a searchable history. Useful for:
+			* Remembering addresses, commands, or form data
+			* A universal command line history for various command line interfaces
+			* Keeping a log of online chats
+			* Building a library of often used fragments or quotes`n
+			Pressing the hotkey will open a search prompt. Pressing f1 ... f10 on an empty prompt will
+			send the first 10 entries, the 'presets'. You can modify presets by typing or pasting text
+			into the search prompt and hitting the appropriate function key. More than 10 presets can be
+			set, and since presets appear first in the log and in search results this may be a good way
+			to differentiate between autotext and log entries.`n
+			Some tips
+			* When editing atk.log, use {enter} to send a line break and {!} to send "!".
 			See www.autohotkey.com/docs/commands/Send.htm for a list of special characters.
-			- Only lines longer than %min_chars% characters will be stored.
-			- To change the settings, edit the automatically generated init file atk.ini
+			* Only lines longer than %min_chars% characters will be stored.
+			* To change the settings, edit the automatically generated init file atk.ini
 		),10,10
 		continue
 	} else if (char=ctrV)
