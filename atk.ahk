@@ -20,26 +20,26 @@ if !FileExist("atk.ini") {
 }
 Hotkey,%mainHotkey%,StartCompletion
 shDel:=chr(127)
-ctrW :=chr(23)
-ctrH :=chr(8)
-ctrA :=chr(1)
-ctrZ :=chr(26)
-ctrV :=chr(22)
-log :=Object()
+ctrW:=chr(23)
+ctrH:=chr(8)
+ctrA:=chr(1)
+ctrZ:=chr(26)
+ctrV:=chr(22)
+log:=Object()
 pre:=Object()
-logsize :=0
-presz :=0
+logL:=0
+preL:=0
 logsection=
 Loop, Read, atk.log
 	if logsection
-		log[logsize++]:=A_LoopReadLine
+		log[logL++]:=A_LoopReadLine
 	else if A_LoopReadLine = ### End Presets ###
 		logsection=1
 	else
-		pre[presz++]:=A_LoopReadLine
-MsgBox % logsize+presz . " lines read from " . A_ScriptDir
-while presz < 10
-	pre[presz++]:="Preset " . presz
+		pre[preL++]:=A_LoopReadLine
+MsgBox % logL+preL . " lines read from " . A_ScriptDir
+while preL < 10
+	pre[preL++]:="Preset " . preL
 presets=
 Loop 10
 	presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
@@ -54,7 +54,6 @@ Loop {
 	if (StrLen(k)>min_chars) {
 		out=
 		Loop,Parse,k
-		{
 			if (A_LoopField = shDel) {
 				out := RTrim(out)
 				StringGetPos,pos,out,%A_Space%,R1
@@ -70,8 +69,7 @@ Loop {
 				out=
 			else
 				out.=A_LoopField
-		}
-		log[logsize++]:=out
+		log[logL++]:=out
 	}
 }
 
@@ -83,14 +81,12 @@ WriteLog:
 	for key,value in log
 		File.WriteLine(value)
 	File.close()
-	MsgBox % logsize+presz . " lines written to %A_ScriptDir%\atk.log"
-	return
-MenuNull:
+	MsgBox % logL+preL . " lines written to %A_ScriptDir%\atk.log"
 	return
 MenuReload:
 	reload
+MenuNull:
 	return
-MenuEditPre:
 MenuEditLog:
 	Gosub, WriteLog
 	Run, atk.log
@@ -275,15 +271,14 @@ else if ErrorLevel=EndKey:F10
 		GoSub, StartCompletion
 	}
 else if ErrorLevel!=EndKey:Escape
-{	if matches>1
+	if matches>1
 		Send,% keyarr[1]
 	else {
 		if ErrorLevel=EndKey:Enter
 			Send,% CurrentEntry
-		pre[presz++]:=CurrentEntry
-		if presz<=10
-			presets.="`nf" . presz . " " . CurrentEntry
+		pre[preL++]:=CurrentEntry
+		if preL<=10
+			presets.="`nf" . preL . " " . CurrentEntry
 	}
-}
 Tooltip
 return
