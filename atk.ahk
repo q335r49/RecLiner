@@ -23,7 +23,6 @@ shDel:=chr(127)
 ctrW :=chr(23)
 ctrH :=chr(8)
 ctrA :=chr(1)
-ctrX :=chr(24)
 ctrZ :=chr(26)
 ctrV :=chr(22)
 log :=Object()
@@ -174,7 +173,7 @@ Loop
 				}
 			}
 		}
-		Tooltip, % matches>1? print : print . "`n(no matches)`nENTER to send and add to snippets`nTAB to add to snippets without sending",10,10
+		Tooltip, % matches>1? print : print . "`n(no matches)`nENTER: add to snippets & send`nTAB: add to snippets",10,10
 	} else
 		Tooltip,%snippets%,10,10
 }
