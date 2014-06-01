@@ -27,23 +27,21 @@ ctrX :=chr(24)
 ctrZ :=chr(26)
 ctrV :=chr(22)
 log :=Object()
-pre :=Object()
+snp:=Object()
 logsize :=0
 presize :=0
 Loop, Read, atk.log
 	log[logsize++]:=A_LoopReadLine
-Loop, Read, atkpresets.log
-	pre[presize++]:=A_LoopReadLine
-MsgBox %logsize% lines read from %A_ScriptDir%\atk.log`n%presize% lines read from %A_ScriptDir%\atkpresets.log
-presets=
+Loop, Read, snippets.log
+	snp[presize++]:=A_LoopReadLine
+MsgBox %logsize% lines read from %A_ScriptDir%\atk.log`n%presize% lines read from %A_ScriptDir%\snippets.log
+snippets=
 Loop % presize>10? 10 : presize
-	presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
+	snippets.="`nf" . A_Index . " " . (StrLen(snp[A_Index])>50? SubStr(snp[A_Index],1,50) . " ..." : snp[A_Index-1]) 
 Menu, Tray, NoStandard
-Menu, Tray, add, &Help, MenuHelp
-Menu, Tray, add, &Reload, MenuReload
-Menu, Tray, add
 Menu, Tray, add, &Edit log..., MenuEditLog
-Menu, Tray, add, &Edit presets..., MenuEditPre
+Menu, Tray, add, &Edit snippets..., MenuEditPre
+Menu, Tray, add, &Reload from log, MenuReload
 Menu, Tray, add
 Menu, Tray, add, &Exit..., MenuExit
 Loop {
@@ -72,18 +70,6 @@ Loop {
 	}
 }
 
-MenuHelp:
-	MsgBox,
-	( LTrim
-		Universal command history allows quick access to everything you've typed!
-		Hotkey: %mainHotkey%`n
-		- On enter, esc, or tab the preceding typed text will be stored as a 'command line' entry
-		- Pressing the hotkey will search the history.
-		- When editing atk.log, use "{enter}" to send a line break and "{!}" to send "!" ("!" is reserved for alt)
-		- Only lines longer than 14 characters will be stored (redefine in settings)
-		- To change the hotkey and other settings, uncomment lines in atk.ini (automatically created)
-	)
-	return
 MenuReload:
 	reload
 MenuEditPre:
@@ -92,12 +78,12 @@ MenuEditLog:
 	for key,value in log
 		File.WriteLine(value)
 	File.close()
-	File := FileOpen("atkpresets.log","w `r`n")
-	for key,value in pre
+	File := FileOpen("snippets.log","w `r`n")
+	for key,value in snp
 		File.WriteLine(value)
 	File.close()
-	MsgBox %logsize% lines written to %A_ScriptDir%\atk.log`n%presize% lines written to %A_ScriptDir%\atkpresets.log
-	Run, % A_ThisMenuItem="&Edit presets..."? "atkpresets.log" : "atk.log"
+	MsgBox %logsize% lines written to %A_ScriptDir%\atk.log`n%presize% lines written to %A_ScriptDir%\snippets.log
+	Run, % A_ThisMenuItem="&Edit snippets..."? "snippets.log" : "atk.log"
 	return
 MenuExit:
 	MsgBox, 3,, Write to log?
@@ -107,18 +93,18 @@ MenuExit:
 		for key,value in log
 			File.WriteLine(value)
 		File.close()
-		File := FileOpen("atkpresets.log","w `r`n")
-		for key,value in pre
+		File := FileOpen("snippets.log","w `r`n")
+		for key,value in snp
 			File.WriteLine(value)
 		File.close()
-		MsgBox % logsize . " lines written to " . A_ScriptDir . "\atk.log`n" . presize . " lines written to " . A_ScriptDir . "\atkpresets.log"
+		MsgBox % logsize . " lines written to " . A_ScriptDir . "\atk.log`n" . presize . " lines written to " . A_ScriptDir . "\snippets.log"
 	}
 	IfMsgBox, Cancel
 		return
 	ExitApp
 
 StartCompletion:
-ToolTip,Enter search (^V:paste ^Write)%presets%,10,10
+ToolTip,Enter search (^Help ^V:paste ^Write)%snippets%,10,10
 CurrentEntry=
 keyarr := Object()
 matches=1
@@ -131,26 +117,41 @@ Loop
 		break
 	else if (char>ctrZ)
 		CurrentEntry.=char
-	else if (char=ctrV)
+	else if (char=ctrH) {
+		Tooltip,
+		( LTrim
+			Universal Command History lets you quickly access everything you've typed! Every
+			time you press ENTER, ESC, or TAB, the line just typed will be stored in the history,
+			which you can search by pressing the hotkey. (Current hotkey: %mainHotkey%)`n
+			Tips: # When editing atk.log, use "{enter}" to send a line break and "{!}" to send "!".
+			See www.autohotkey.com/docs/commands/Send.htm for a list of special characters.
+			# Only lines longer than %min_chars% characters will be stored.
+			# To change the settings, edit the automatically generated init file atk.ini
+			# Snippets allow for an easy way to access the first 10 entries and provide a way
+			to keep frequently typed text separate from log entries. Snippets can be set simply
+			by typing it into the search prompt or by editing snippets.log
+		),10,10
+		continue
+	} else if (char=ctrV)
 		CurrentEntry=%clipboard%
 	else if (char=ctrW) { 
 		File := FileOpen("atk.log","w `r`n")
 		for key,value in log
 			File.WriteLine(value)
 		File.close()
-		File := FileOpen("atkpresets.log","w `r`n")
-		for key,value in pre
+		File := FileOpen("snippets.log","w `r`n")
+		for key,value in snp
 			File.WriteLine(value)
 		File.close()
-		MsgBox %logsize% lines written to %A_ScriptDir%\atk.log`n%presize% lines written to %A_ScriptDir%\atkpresets.log
 		Tooltip
+		MsgBox %logsize% lines written to %A_ScriptDir%\atk.log`n%presize% lines written to %A_ScriptDir%\snippets.log
 		return
 	}
 	matches:=1
 	print=%CurrentEntry%
 	if CurrentEntry
 	{
-		for key,value in pre {
+		for key,value in snp {
 			StringGetPos,pos,value,%CurrentEntry%
 			if pos!=-1
 			{	keyarr[matches] := value
@@ -161,7 +162,8 @@ Loop
 			}
 		}
 		if matches<=10
-		{	for key,value in log {
+		{
+			for key,value in log {
 				StringGetPos,pos,value,%CurrentEntry%
 				if pos!=-1
 				{	keyarr[matches] := value
@@ -172,38 +174,39 @@ Loop
 				}
 			}
 		}
-		Tooltip, % matches>1? print : print . "`n(no matches)",10,10
+		Tooltip, % matches>1? print : print . "`n(no matches)`nENTER to send and add to snippets`nTAB to add to snippets without sending",10,10
 	} else
-		Tooltip,%presets%,10,10
+		Tooltip,%snippets%,10,10
 }
 if ErrorLevel=EndKey:F1
-	Send, % matches>1? keyarr[1] : pre[0]
+	Send, % matches>1? keyarr[1] : snp[0]
 else if ErrorLevel=EndKey:F2
-	Send, % matches>2? keyarr[2] : pre[1]
+	Send, % matches>2? keyarr[2] : snp[1]
 else if ErrorLevel=EndKey:F3
-	Send, % matches>3? keyarr[3] : pre[2]
+	Send, % matches>3? keyarr[3] : snp[2]
 else if ErrorLevel=EndKey:F4
-	Send, % matches>4? keyarr[4] : pre[3]
+	Send, % matches>4? keyarr[4] : snp[3]
 else if ErrorLevel=EndKey:F5
-	Send, % matches>5? keyarr[5] : pre[4]
+	Send, % matches>5? keyarr[5] : snp[4]
 else if ErrorLevel=EndKey:F6
-	Send, % matches>6? keyarr[6] : pre[5]
+	Send, % matches>6? keyarr[6] : snp[5]
 else if ErrorLevel=EndKey:F7
-	Send, % matches>7? keyarr[7] : pre[6]
+	Send, % matches>7? keyarr[7] : snp[6]
 else if ErrorLevel=EndKey:F8
-	Send, % matches>8? keyarr[8] : pre[7]
+	Send, % matches>8? keyarr[8] : snp[7]
 else if ErrorLevel=EndKey:F9
-	Send, % matches>9? keyarr[9] : pre[8]
+	Send, % matches>9? keyarr[9] : snp[8]
 else if ErrorLevel=EndKey:F10
-	Send, % matches>10? keyarr[10] : pre[9]
+	Send, % matches>10? keyarr[10] : snp[9]
 else if ErrorLevel!=EndKey:Escape
 {	if matches>1
 		Send,% keyarr[1]
 	else {
-		Send,% CurrentEntry
-		pre[presize++]:=CurrentEntry
+		if ErrorLevel=EndKey:Enter
+			Send,% CurrentEntry
+		snp[presize++]:=CurrentEntry
 		if presize<=10
-			presets.="`nf" . presize . " " . CurrentEntry
+			snippets.="`nf" . presize . " " . CurrentEntry
 	}
 }
 Tooltip
