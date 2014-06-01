@@ -14,4 +14,4 @@ Press the hotkey (default <kbd>f4</kbd>) to search through all entries. Pressing
 ####Tips
 * When editing atk.log, use {enter} to send a line break and {!} to send "!".  See [www.autohotkey.com/docs/commands/Send.htm](www.autohotkey.com/docs/commands/Send.htm) for a list of special characters.
 * Only lines longer than 14 characters will be stored.
-* Check out the **[Youtube video](https://www.youtube.com/watch?v=buHfIfkn3JM&feature=youtu.be)**!
+* Check out the **[Youtube video](https://www.youtube.com/watch?v=iOPYzTMHf_0)**!
