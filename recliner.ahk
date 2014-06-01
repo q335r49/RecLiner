@@ -45,10 +45,10 @@ Loop 12
 	presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
 Menu, Tray, NoStandard
 Menu, Tray, add, Current Hotkey: %mainHotkey%, MenuEditSettings
-Menu, Tray, add, &Edit log..., MenuEditLog
+Menu, Tray, add, &Edit log, MenuEditLog
 Menu, Tray, add, &Reload from log, MenuReload
 Menu, Tray, add
-Menu, Tray, add, &Exit..., MenuExit
+Menu, Tray, add, &Exit, MenuExit
 Loop {
 	Input, k, V M, {enter}{esc}{tab}
 	if (StrLen(k)>min_chars) {
@@ -104,7 +104,6 @@ uiLoop:
 ToolTip,Enter search (^Help ^V:paste ^Write)%presets%,10,10
 Entry=
 keyarr := Object()
-matches=1
 Loop
 {	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{tab}
 	if ErrorLevel=EndKey:Backspace
@@ -140,10 +139,24 @@ Loop
 		Tooltip
 		return
 	}
+	if !Entry
+	{	Tooltip,%presets%,10,10
+		continue
+	}
 	matches:=1
 	print=%Entry%
-	if Entry
-	{	for key,value in pre {
+	for key,value in pre {
+		StringGetPos,pos,value,%Entry%
+		if (pos=-1)
+			continue
+		keyarr[matches] := value
+		len:=StrLen(value)
+		print.="`nf" . matches . " " . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
+		if (++matches>12)
+			break
+	}
+	if matches<=12
+		for key,value in log {
 			StringGetPos,pos,value,%Entry%
 			if (pos=-1)
 				continue
@@ -153,20 +166,7 @@ Loop
 			if (++matches>12)
 				break
 		}
-		if matches<=12
-			for key,value in log {
-				StringGetPos,pos,value,%Entry%
-				if (pos=-1)
-					continue
-				keyarr[matches] := value
-				len:=StrLen(value)
-				print.="`nf" . matches . " " . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
-				if (++matches>12)
-					break
-			}
-		Tooltip, % matches>1? print : print . "`n(no matches)`nf1..f10 to add to presets`nenter: append to presets & send`ntab: append to presets",10,10
-	} else
-		Tooltip,%presets%,10,10
+	Tooltip, % matches>1? print : print . "`n(no matches)`nf1..f10 to add to presets`nenter: append to presets & send`ntab: append to presets",10,10
 }
 if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 	fN:=SubStr(ErrorLevel,9)
