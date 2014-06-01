@@ -8,14 +8,14 @@ if !FileExist("recliner.ini") {
 	( LTrim
 		[main]
 		;Hotkey=#s
-		;   Examples: ^t (control t) !f5 (alt f5) +f6 (shift f6) See http://www.autohotkey.com/docs/Hotkeys.htm for further documenation (Default #s)
+		;   Examples: ^t (control t) !f5 (alt f5) +f6 (shift f6) #s (windows s) See http://www.autohotkey.com/docs/Hotkeys.htm for further documenation (Default f4)
 		;MinLength=14
 		;   Strings shorter than this length will not be stored in the archive (default 14)
 	), recliner.ini
-	mainHotkey="#s"
+	mainHotkey=f4
 	min_chars=14
 } else {
-	IniRead, mainHotkey, recliner.ini, main, Hotkey, #s
+	IniRead, mainHotkey, recliner.ini, main, Hotkey, f4
 	IniRead, min_chars, recliner.ini, main, MinLength, 14
 }
 Hotkey,%mainHotkey%,StartCompletion
@@ -46,6 +46,7 @@ Loop 10
 Menu, Tray, NoStandard
 Menu, Tray, add, Current Hotkey: %mainHotkey%, MenuNull
 Menu, Tray, add, &Edit log..., MenuEditLog
+Menu, Tray, add, &Edit settings..., MenuEditSettings
 Menu, Tray, add, &Reload from log, MenuReload
 Menu, Tray, add
 Menu, Tray, add, &Exit..., MenuExit
@@ -90,6 +91,9 @@ MenuNull:
 MenuEditLog:
 	Gosub, WriteLog
 	Run, recliner.log
+	return
+MenuEditSettings:
+	Run, recliner.ini
 	return
 MenuExit:
 	MsgBox, 3,, Write to log?
