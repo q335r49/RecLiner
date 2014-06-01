@@ -28,18 +28,18 @@ ctrE :=chr(5)
 ctrX :=chr(24)
 ctrZ :=chr(26)
 ctrV :=chr(22)
-dict :=Object()
-size :=0
-if !FileExist("atk.log")
-	MsgBox % "Warning: `n" . A_ScriptDir . "\atk.log not found!`n`nTo save log between sessions, use " . %mainHotkey% . " Ctrl-W"
-else {
-	Loop, Read, atk.log
-		dict[size++]:=A_LoopReadLine
-	MsgBox % size . " lines loaded from " . A_ScriptDir . "\atk.log"
-}
+log :=Object()
+pre :=Object()
+logsize :=0
+presize :=0
+Loop, Read, atk.log
+	log[logsize++]:=A_LoopReadLine
+Loop, Read, atkpresets.log
+	pre[presize++]:=A_LoopReadLine
+MsgBox %logsize% lines read from %A_ScriptDir%\atk.log`n%presize% lines read from %A_ScriptDir%\atkpresets.log
 presets=
-Loop % size>10? 10 : size
-	presets.="`nf" . A_Index . " " . (StrLen(dict[A_Index])>50? SubStr(dict[A_Index],1,50) . " ..." : dict[A_Index-1]) 
+Loop % presize>10? 10 : presize
+	presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
 Loop {
 	Input, k, V M, {enter}{esc}{tab}
 	if (StrLen(k)>min_chars) {
@@ -62,8 +62,7 @@ Loop {
 			else
 				out.=A_LoopField
 		}
-		dict[size]:=out
-		size++
+		log[logsize++]:=out
 	}
 }
 
@@ -71,23 +70,12 @@ StartCompletion:
 ToolTip,Enter search (^Edit ^Help ^Reload ^V:paste ^Write e^Xit up:prev dn:next)%presets%,10,10
 CurrentEntry=
 keyarr := Object()
-pointer := size
 matches=1
 Loop
 {
 	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{tab}
 	if ErrorLevel=EndKey:Backspace
 		StringTrimRight, CurrentEntry, CurrentEntry, 1
-	else if ErrorLevel=EndKey:Up
-	{	matches=0
-		pointer:=pointer>0? pointer-1 : 0
-		CurrentEntry:=dict[pointer]
-	}
-	else if ErrorLevel=EndKey:Down
-	{	matches=0
-		pointer:=pointer<size-1? pointer+1 : size-1
-		CurrentEntry:=dict[pointer]
-	}
 	else if ErrorLevel!=Max
 		break
 	else if (char>ctrZ)
@@ -95,27 +83,46 @@ Loop
 	else if (char=ctrV)
 		CurrentEntry=%clipboard%
 	else if (char=ctrW) { 
-		Log := FileOpen("atk.log","w `r`n")
-		for key,value in dict
-			Log.WriteLine(value)
-		Log.close()
-		MsgBox % size . " lines written to " . A_ScriptDir . "\atk.log"
+		File := FileOpen("atk.log","w `r`n")
+		for key,value in log
+			File.WriteLine(value)
+		File.close()
+		File := FileOpen("atkpresets.log","w `r`n")
+		for key,value in pre
+			File.WriteLine(value)
+		File.close()
+		MsgBox %logsize% lines written to %A_ScriptDir%\atk.log`n%presize% lines written to %A_ScriptDir%\atkpresets.log
 		Tooltip
 		return
-	} else if (char=ctrR)
+	} else if (char=ctrR) {
+		File := FileOpen("atk.log","w `r`n")
+		for key,value in log
+		{
+			File.WriteLine(value)
+			MsgBox,%value%
+		}
+		File.close()
+		File := FileOpen("atkpresets.log","w `r`n")
+		for key,value in pre
+			File.WriteLine(value)
+		File.close()
 		reload
-	else if (char=ctrE) {
-		Log := FileOpen("atk.log","w `r`n")
-		for key,value in dict
-			Log.WriteLine(value)
-		Log.close()
-		MsgBox % size . " lines written to " . A_ScriptDir . "\atk.log"
+	} else if (char=ctrE) {
+		File := FileOpen("atk.log","w `r`n")
+		for key,value in log
+			File.WriteLine(value)
+		File.close()
+		File := FileOpen("atkpresets.log","w `r`n")
+		for key,value in pre
+			File.WriteLine(value)
+		File.close()
+		MsgBox %logsize% lines written to %A_ScriptDir%\atk.log`n%presize% lines written to %A_ScriptDir%\atkpresets.log
 		Tooltip
 		Run, atk.log
 		return
 	} else if (char=ctrH) {
 		ToolTip
-		msgbox,
+		MsgBox,
 		( LTrim
 			Universal command history allows quick access to everything you've typed!
 			Hotkey: %mainHotkey%`n
@@ -130,11 +137,15 @@ Loop
 		MsgBox, 4,, Write to log?
 		IfMsgBox, Yes
 		{
-			Log := FileOpen("atk.log","w `r`n")
-			for key,value in dict
-				Log.WriteLine(value)
-			Log.close()
-			MsgBox % size . " lines written to " . A_ScriptDir . "\atk.log"
+			File := FileOpen("atk.log","w `r`n")
+			for key,value in log
+				File.WriteLine(value)
+			File.close()
+			File := FileOpen("atkpresets.log","w `r`n")
+			for key,value in pre
+				File.WriteLine(value)
+			File.close()
+			MsgBox % logsize . " lines written to " . A_ScriptDir . "\atk.log`n" . presize . " lines written to " . A_ScriptDir . "\atkpresets.log"
 		}
 		ExitApp
 	}
@@ -142,14 +153,26 @@ Loop
 	print=%CurrentEntry%
 	if CurrentEntry
 	{
-		for key,value in dict {
+		for key,value in pre {
 			StringGetPos,pos,value,%CurrentEntry%
 			if pos!=-1
-			{	keyarr[matches] := key
+			{	keyarr[matches] := value
 				len:=StrLen(value)
 				print.="`nf" . matches . " " . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
 				if (++matches>10)
 					break
+			}
+		}
+		if matches<=10
+		{	for key,value in log {
+				StringGetPos,pos,value,%CurrentEntry%
+				if pos!=-1
+				{	keyarr[matches] := value
+					len:=StrLen(value)
+					print.="`nf" . matches . " " . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
+					if (++matches>10)
+						break
+				}
 			}
 		}
 		Tooltip, % matches>1? print : print . "`n(no matches)",10,10
@@ -157,32 +180,31 @@ Loop
 		Tooltip,%presets%,10,10
 }
 if ErrorLevel=EndKey:F1
-	Send, % matches>1? dict[keyarr[1]] : dict[0]
+	Send, % matches>1? keyarr[1] : pre[0]
 else if ErrorLevel=EndKey:F2
-	Send, % matches>2? dict[keyarr[2]] : dict[1]
+	Send, % matches>2? keyarr[2] : pre[1]
 else if ErrorLevel=EndKey:F3
-	Send, % matches>3? dict[keyarr[3]] : dict[2]
+	Send, % matches>3? keyarr[3] : pre[2]
 else if ErrorLevel=EndKey:F4
-	Send, % matches>4? dict[keyarr[4]] : dict[3]
+	Send, % matches>4? keyarr[4] : pre[3]
 else if ErrorLevel=EndKey:F5
-	Send, % matches>5? dict[keyarr[5]] : dict[4]
+	Send, % matches>5? keyarr[5] : pre[4]
 else if ErrorLevel=EndKey:F6
-	Send, % matches>6? dict[keyarr[6]] : dict[5]
+	Send, % matches>6? keyarr[6] : pre[5]
 else if ErrorLevel=EndKey:F7
-	Send, % matches>7? dict[keyarr[7]] : dict[6]
+	Send, % matches>7? keyarr[7] : pre[6]
 else if ErrorLevel=EndKey:F8
-	Send, % matches>8? dict[keyarr[8]] : dict[7]
+	Send, % matches>8? keyarr[8] : pre[7]
 else if ErrorLevel=EndKey:F9
-	Send, % matches>9? dict[keyarr[9]] : dict[8]
+	Send, % matches>9? keyarr[9] : pre[8]
 else if ErrorLevel=EndKey:F10
-	Send, % matches>10? dict[keyarr[10]] : dict[9]
+	Send, % matches>10? keyarr[10] : pre[9]
 else if ErrorLevel!=EndKey:Escape
 {	if matches>1
-		Send,% dict[keyarr[1]]
+		Send,% keyarr[1]
 	else {
 		Send,% CurrentEntry
-		dict[size]:=CurrentEntry
-		size++
+		pre[presize++]:=CurrentEntry
 	}
 }
 Tooltip
