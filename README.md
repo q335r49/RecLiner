@@ -4,6 +4,7 @@ Record and recall every line you type! On <kbd>enter</kbd>, <kbd>esc</kbd>, or <
 * Have a unified history for command line interfaces!
 * Log online chats!
 * Build a library of often used fragments or quotes!
+* Check out the **[Youtube video](https://www.youtube.com/watch?v=iOPYzTMHf_0)**!
 
 ####Startup
 Install [Autohotkey](http://www.autohotkey.com/) and run [recliner.ahk](https://raw.githubusercontent.com/q335r49/RecLiner/master/recliner.ahk).
@@ -16,6 +17,5 @@ Install [Autohotkey](http://www.autohotkey.com/) and run [recliner.ahk](https://
 * More than 12 presets can be set. The inaccessible presets can serve to differentiate between autotext and log. Presets appear first in recliner.log and search results.
 
 ####Editing recliner.log
-* When editing atk.log, use {enter} to send a line break and {!} to send "!".  See [www.autohotkey.com/docs/commands/Send.htm](www.autohotkey.com/docs/commands/Send.htm) for a list of special characters.
+* Use "{enter}" to send a line break and "{!}" to send "!".  See [www.autohotkey.com/docs/commands/Send.htm](www.autohotkey.com/docs/commands/Send.htm) for a complete list of special characters.
 * Only lines longer than 14 characters will be stored.
-* Check out the **[Youtube video](https://www.youtube.com/watch?v=iOPYzTMHf_0)**!
