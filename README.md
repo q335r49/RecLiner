@@ -1,5 +1,5 @@
-#RecLiner v1.1
-Record and recall every line you type! On <kdb>enter</kbd>, <kdb>esc</kbd>, or <kdb>tab</kbd>, the line just typed will be stored in a searchable history.
+#RecLiner
+Record and recall every line you type! On <kbd>enter</kbd>, <kbd>esc</kbd>, or <kbd>tab</kbd>, the line just typed will be stored in a searchable history.
 * Remember addresses, serial numbers, usernames!
 * Have a unified history for command line interfaces!
 * Log online chats!
@@ -9,11 +9,10 @@ Record and recall every line you type! On <kdb>enter</kbd>, <kdb>esc</kbd>, or <
 Install [Autohotkey](http://www.autohotkey.com/) and run [recliner.ahk](https://raw.githubusercontent.com/q335r49/RecLiner/master/recliner.ahk).
 
 ####Searching
-* Press the hotkey (defailt: <kdb>f4</kbd>) to bring up a search prompt.
-* Pressing <kdb>f1</kbd> .. <kbd>f12</kbd> on an empty prompt will return the first 12 lines, the 'presets'
+* Press the hotkey (default: <kbd>f4</kbd>) to bring up a search prompt.
+* Pressing <kbd>f1</kbd> .. <kbd>f12</kbd> on an empty prompt will return the first 12 lines, the 'presets'
 * Enter text at the prompt and press <kbd>f1</kbd> .. <kbd>f12</kbd> to set presets
-* <kbd>up</kbd> and <kbd>down</kbd> with no search results will select the previous or next entry starting with the last entry returned
-* <kbd>up</kbd> and <kbd>down</kbd> with search results will select the previous or next entry starting at the first search result
+* Without search results, <kbd>up</kbd> and <kbd>down</kbd> will select the previous or next entry starting with the last returned entry. With search results, navigation starts at the first search result
 * More than 12 presets can be set. The inaccessible presets can serve to differentiate between autotext and log. Presets appear first in recliner.log and search results.
 
 ####Editing recliner.log
