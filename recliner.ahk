@@ -98,7 +98,7 @@ MenuExit:
 	ExitApp
 
 uiLoop:
-ToolTip,> `n^Help ^V:paste ^Save%presets%,10,10
+ToolTip,> `n^Help ^V:paste ^Save Up:prev Dn:next%presets%,10,10
 matches:=1
 Entry=
 NotFirstPress=0
@@ -130,21 +130,28 @@ Loop
 	else if (char=ctrH) {
 		Tooltip,
 		( LTrim
-			RecLiner lets you record and recall every line you type! When you press Enter, Esc, or Tab,
-			the line just typed will be stored in a searchable history. Useful for:
-			* Remembering addresses, commands, or form data
-			* A unified command line history for command line interfaces
-			* Keeping a log of online chats
-			* Building a library of often used fragments or quotes`n
-			Pressing the hotkey will open a search prompt. Pressing f1 ... f10 on an empty prompt will
-			send the first 12 entries, the 'presets'. You can modify presets by typing or pasting text
-			into the search prompt and hitting the appropriate function key. More than 12 presets can be
-			set, but the inaccessible presets can be serve to differentiate between autotext and log
-			entries: they appear first in recliner.log and search results.`n
-			Tips
-			* When editing recliner.log, use {enter} to send a line break and {!} to send "!".
-			See www.autohotkey.com/docs/commands/Send.htm for a list of special characters.
-			* Only lines longer than %min_chars% characters will be stored.
+			RECLINER v1.1`n
+			Record and recall every line you type! On Enter, Esc, or Tab, the line just typed will
+			be stored in a searchable history.
+			* Remember addresses, serial numbers, and usernames!
+			* Have a unified history for command line interfaces!
+			* Log online chats!
+			* Build a library of frequently used quotes!`n
+			SEARCHING
+			* Press [%mainHotkey%] to bring up a search prompt.
+			* The function keys [f1] .. [f12] serve multiple roles depending on the situation. On an
+			empty prompt, they will send the presets. When there are search results, it will send
+			the corresponding search entry. But when there are no search results for an entered
+			text, they will set the corresponding preset to that text.
+			* [up] and [down] navigates the log. The starting point is either the first search
+			result or the last returned entry on an empty prompt.
+			* More than 12 presets can be set. Presets appear first in recliner.log and the search
+			and can serve to conceptually differentiate between autotext and log entries.`n
+			EDITING RECLINER.LOG
+			* Use {enter} to send a line break and {!} to send "!".
+			* See www.autohotkey.com/docs/commands/Send.htm for a list of special characters.
+			* Only lines longer than %min_chars% characters will be stored in the log.
+			* The line "### End Presets ###" separates presets from log entries.
 		),10,10
 		continue
 	} else if (char=ctrV)

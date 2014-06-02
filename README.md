@@ -3,7 +3,7 @@ Record and recall every line you type! On <kbd>enter</kbd>, <kbd>esc</kbd>, or <
 * Remember addresses, serial numbers, usernames!
 * Have a unified history for command line interfaces!
 * Log online chats!
-* Build a library of often used fragments or quotes!
+* Build a library of often used quotes!
 * Check out the **[Youtube video](https://www.youtube.com/watch?v=iOPYzTMHf_0)**!
 
 ####Startup
