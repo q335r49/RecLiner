@@ -3,7 +3,7 @@ SendMode Input  ; Recommended for new scripts due to its superior speed and reli
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 StringCaseSense, Off
 shDel:=chr(127)
-ctrW:=chr(23)
+ctrS:=chr(19)
 ctrH:=chr(8)
 ctrA:=chr(1)
 ctrZ:=chr(26)
@@ -35,10 +35,10 @@ Loop, Read, recliner.log
 		pre[preL++]:=A_LoopReadLine
 MsgBox % logL . " log entries, " . preL . " preset entries read from " . A_ScriptDir . "\recliner.log"
 while preL < 12
-	pre[preL++]:="Preset " . preL
-presets=
+	pre[preL++]:=""
 Loop 12
 	presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
+mark:=0
 Menu, Tray, NoStandard
 Menu, Tray, add, Set &hotkey (%mainHotkey%), MenuEditSettings
 Menu, Tray, add, &Edit log, MenuEditLog
@@ -80,7 +80,8 @@ WriteLog:
 	MsgBox % logL . " log entries, " . preL . " preset entries written to " . A_ScriptDir . "\recliner.log"
 	return
 MenuReload:
-	reload
+	Reload
+	return
 MenuEditLog:
 	Gosub, WriteLog
 	Run, recliner.log
@@ -97,15 +98,32 @@ MenuExit:
 	ExitApp
 
 uiLoop:
-ToolTip,> `n^H help ^V paste ^W write%presets%,10,10
+ToolTip,> `n^Help ^V:paste ^Save%presets%,10,10
 matches:=1
 Entry=
-keyarr := Object()
+NotFirstPress=0
+matchV := Object()
+matchK := Object()
 Loop
 {	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{tab}
 	if ErrorLevel=EndKey:Backspace
 		StringTrimRight, Entry, Entry, 1
-	else if ErrorLevel!=Max
+	else if (ErrorLevel="EndKey:Up" || ErrorLevel="EndKey:Down") {
+		mark:=matches>1? matchK[1] : mark
+		if (mark>=0) {
+			mark+=(ErrorLevel="EndKey:Up"? -1 : 1)*NotFirstPress
+			mark:=mark>=preL? preL-1 : mark<0? 0 : mark
+			Entry:=pre[mark]
+		} else {
+			mark+=(ErrorLevel="EndKey:Up"? 1 : -1)*NotFirstPress
+			mark:=-mark-1>logL? -logL-1 : mark>-1? -1 : mark 
+			Entry:=log[-mark-1]
+		}
+		NotFirstPress:=1
+		matches:=1
+		Tooltip,> %Entry%,10,10
+		continue
+	} else if ErrorLevel!=Max
 		break
 	else if (char>ctrZ)
 		Entry.=char
@@ -131,7 +149,7 @@ Loop
 		continue
 	} else if (char=ctrV)
 		Entry=%clipboard%
-	else if (char=ctrW) { 
+	else if (char=ctrS) { 
 		Gosub, WriteLog
 		Tooltip
 		return
@@ -146,7 +164,8 @@ Loop
 		StringGetPos,pos,value,%Entry%
 		if (pos=-1)
 			continue
-		keyarr[matches] := value
+		matchV[matches] := value
+		matchK[matches] := key
 		len:=StrLen(value)
 		print.="`nf" . matches . " " . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
 		if (++matches>12)
@@ -157,7 +176,8 @@ Loop
 			StringGetPos,pos,value,%Entry%
 			if (pos=-1)
 				continue
-			keyarr[matches] := value
+			matchV[matches] := value
+			matchK[matches] := -key-1
 			len:=StrLen(value)
 			print.="`nf" . matches . " " . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
 			if (++matches>12)
@@ -168,20 +188,32 @@ Loop
 if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 	fN:=SubStr(ErrorLevel,9)
 	if fN<=12
-		if (matches>1 || !Entry)
-			Send, % (matches>fN? keyarr[fN] : pre[fN-1])
-		else {
+		if (matches<=1 && Entry) {
 			pre[fN-1]:=Entry
 			presets=
 			Loop 12
 				presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
 			GoSub, uiLoop
+		} else if (matches>fN) {
+			Send,% matchV[fN]
+			mark:=matchK[fN]
 		}
 } else if ErrorLevel!=EndKey:Escape
-	if matches>1
-		Send,% keyarr[1]
-	else {
-		pre[preL++]:=Entry
+	if (matches>1) {
+		Send,% matchV[1]
+		mark:=matchK[1]
+	} else {
+		count=0
+		while (pre[count]!="" && count<12)
+			count++
+		if count=12
+			pre[preL++]:=Entry
+		else {
+			pre[count]:=Entry
+			presets=
+			Loop 12
+				presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index-1]) 
+		}
 		if ErrorLevel=EndKey:Enter
 			Send,% Entry
 	}
