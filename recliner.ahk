@@ -6,6 +6,7 @@ shDel:=chr(127)
 ctrS:=chr(19)
 ctrH:=chr(8)
 ctrA:=chr(1)
+ctrU:=chr(21)
 ctrZ:=chr(26)
 ctrV:=chr(22)
 if !FileExist("recliner.ini")
@@ -98,7 +99,7 @@ MenuExit:
 	ExitApp
 
 uiLoop:
-ToolTip,> `n^Help ^V:paste ^Save Up:prev Dn:next%presets%,10,10
+ToolTip,> `n^Help ^U:clear ^V:paste ^Save Up:prev Dn:next%presets%,10,10
 matches:=1
 Entry=
 NotFirstPress=0
@@ -121,12 +122,14 @@ Loop
 		}
 		NotFirstPress=1
 		matches=1
-		Tooltip,% "> " . Entry . "`n" . (mark>=0? "preset " . mark : "log " . (-mark-1)),10,10
+		Tooltip,% "> " . Entry . "`n" . (mark>=0? " PRESET " . mark : " LOG " . (-mark-1)),10,10
 		continue
 	} else if ErrorLevel!=Max
 		break
 	else if (char>ctrZ)
 		Entry.=char
+	else if (char=ctrU)
+		Entry:=""
 	else if (char=ctrH) {
 		Tooltip,
 		( LTrim
@@ -161,11 +164,11 @@ Loop
 		Tooltip
 		return
 	}
+	matches:=1
 	if !Entry
 	{	Tooltip,> %presets%,10,10
 		continue
 	}
-	matches:=1
 	print=> %Entry%
 	for key,value in pre {
 		StringGetPos,pos,value,%Entry%
