@@ -119,9 +119,9 @@ Loop
 			mark:=-mark-1>logL? -logL-1 : mark>-1? -1 : mark 
 			Entry:=log[-mark-1]
 		}
-		NotFirstPress:=1
-		matches:=1
-		Tooltip,> %Entry%,10,10
+		NotFirstPress=1
+		matches=1
+		Tooltip,% "> " . Entry . "`n" . (mark>=0? "preset " . mark : "log " . (-mark-1)),10,10
 		continue
 	} else if ErrorLevel!=Max
 		break
