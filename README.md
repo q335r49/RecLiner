@@ -11,9 +11,9 @@ Install [Autohotkey](http://www.autohotkey.com/) and run [recliner.ahk](https://
 
 ####Searching
 * Press the hotkey (default: <kbd>f4</kbd>) to bring up a search prompt.
-* Pressing <kbd>f1</kbd> .. <kbd>f12</kbd> on an empty prompt will return the first 12 lines, the 'presets'
-* Enter text at the prompt and press <kbd>f1</kbd> .. <kbd>f12</kbd> to set presets
-* Without search results, <kbd>up</kbd> and <kbd>down</kbd> will select the previous or next entry starting with the last returned entry. With search results, navigation starts at the first search result
+* Pressing <kbd>f1</kbd> .. <kbd>f12</kbd> on an empty prompt will return the first 12 lines, the 'presets'.
+* Enter text at the prompt and press <kbd>f1</kbd> .. <kbd>f12</kbd> to set presets.
+* Without search results, the arrow keys will navigate the history starting with the last returned entry. With search results, navigation starts at the first search result.
 * More than 12 presets can be set. The inaccessible presets can serve to differentiate between autotext and log. Presets appear first in recliner.log and search results.
 
 ####Editing recliner.log

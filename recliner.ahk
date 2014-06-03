@@ -38,10 +38,8 @@ MsgBox, % logL . " logs " . preL . " presets loaded from recliner.log"
 while preL < 12
 	pre[preL++]:=""
 Loop 12
-	presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index]) 
+	presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
 mark:=0
-Menu, Tray, NoStandard
-Menu, Tray, add, Set &hotkey (%mainHotkey%), MenuEditSettings
 Menu, Tray, add, &Edit log, MenuEditLog
 Menu, Tray, add, &Reload from log, MenuReload
 Menu, Tray, add
@@ -99,46 +97,45 @@ MenuExit:
 	ExitApp
 
 uiLoop:
-ToolTip,> `n^Help ^U:clear ^V:paste ^Save Up:prev Dn:next%presets%,10,10
+ToolTip,> `n^Help ^U:clear ^V:paste ^Save arrows:history%presets%,10,10
 matches:=1
 Entry=
 NotFirstPress=0
 matchV := Object()
 matchK := Object()
 Loop
-{	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{tab}
+{	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{left}{right}{tab}
 	if ErrorLevel=EndKey:Backspace
 		StringTrimRight, Entry, Entry, 1
-	else if (ErrorLevel="EndKey:Up" || ErrorLevel="EndKey:Down") {
+	else if (ErrorLevel="EndKey:Up" || ErrorLevel="EndKey:Down" || ErrorLevel="EndKey:Right" || ErrorLevel="EndKey:Left") {
 		mark:=matches>1? matchK[1] : mark
 		if (mark>=0) {
-			mark+=(ErrorLevel="EndKey:Up"? -1 : 1)*NotFirstPress
+			mark+=(ErrorLevel="EndKey:Up"? -1 : ErrorLevel="EndKey:Down"? 1 : ErrorLevel="EndKey:Left"? -12 : 12)*NotFirstPress
 			mark:=mark>=preL? preL-1 : mark<0? 0 : mark
 			Entry:=pre[mark]
-			start:=mark//12*12
+			start:=mark//12*12-1
 			hist=
 			Loop 12
-				hist.="`nf" . A_Index . " " . (StrLen(pre[A_Index+start])>50? SubStr(pre[A_Indexs+start],1,50) . " ..." : pre[A_Index+start]) 
+				hist.="`nf" . A_Index . ": " . (A_Index+start=mark? "[" . A_Index+start+1 . "]" : A_Index+start+1) . " " . (StrLen(pre[A_Index+start])>50? (SubStr(pre[A_Index+start],1,50) . " ...") : pre[A_Index+start]) 
 		} else {
-			mark+=(ErrorLevel="EndKey:Up"? 1 : -1)*NotFirstPress
+			mark+=(ErrorLevel="EndKey:Up"? 1 : ErrorLevel="EndKey:Down"? -1 : ErrorLevel="EndKey:Left"? 12 : -12)*NotFirstPress
 			mark:=-mark-1>logL? -logL-1 : mark>-1? -1 : mark 
 			Entry:=log[-mark-1]
-			start:=(-mark-1)//12*12
+			start:=(-mark-1)//12*12-1
 			hist=
 			Loop 12
-				hist.="`nf" . A_Index . " " . (StrLen(log[A_Index+start])>50? SubStr(log[A_Indexs+start],1,50) . " ..." : log[A_Index+start]) 
+				hist.="`nf" . A_Index . ": " . (A_Index+start=-mark-1? "[" . A_Index+start+1 . "]" : A_Index+start+1) . " " . (StrLen(log[A_Index+start])>50? (SubStr(log[A_Index+start],1,50) . " ...") : log[A_Index+start]) 
 		}
 		NotFirstPress=1
 		matches=1
-		Tooltip,% "> " . Entry . "`n" . hist,10,10
-		;Tooltip,% "> " . Entry . "`n" . (mark>=0? " PRESET " . mark : " LOG " . (-mark-1)),10,10
-
+		Tooltip,% "> " . Entry .  hist,10,10
 		continue
 	} else if ErrorLevel!=Max
 		break
-	else if (char>ctrZ)
+	else if (char>ctrZ) {
 		Entry.=char
-	else if (char=ctrU)
+		NotFirstPress=0
+	} else if (char=ctrU)
 		Entry:=""
 	else if (char=ctrH) {
 		Tooltip,
@@ -156,7 +153,7 @@ Loop
 			empty prompt, they will send the presets. When there are search results, it will send
 			the corresponding search entry. But when there are no search results for an entered
 			text, they will set the corresponding preset to that text.
-			* [up] and [down] navigates the log. The starting point is either the first search
+			* The arrow keys navigates the log. The starting point is either the first search
 			result or the last returned entry on an empty prompt.
 			* More than 12 presets can be set. Presets appear first in recliner.log and the search
 			and can serve to conceptually differentiate between autotext and log entries.`n
@@ -213,7 +210,7 @@ if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 				pre[fN-1]:=Entry
 				presets=
 				Loop 12
-					presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index]) 
+					presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
 				GoSub, uiLoop
 			} else
 				Send,% pre[fN]
@@ -235,7 +232,7 @@ if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 			pre[count]:=Entry
 			presets=
 			Loop 12
-				presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index])>50? SubStr(pre[A_Index],1,50) . " ..." : pre[A_Index]) 
+				presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
 		}
 		if ErrorLevel=EndKey:Enter
 			Send,% Entry
