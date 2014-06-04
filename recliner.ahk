@@ -213,7 +213,7 @@ if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 					presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
 				GoSub, uiLoop
 			} else
-				Send,% pre[fN]
+				Send,% pre[fN-1]
 		} else if (matches>fN) {
 			Send,% matchV[fN]
 			mark:=matchK[fN]
