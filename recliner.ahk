@@ -105,6 +105,7 @@ matchV := Object()
 matchK := Object()
 Loop {
 	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{left}{right}{tab}
+	browsemode=0
 	if (ErrorLevel="EndKey:Up" || ErrorLevel="EndKey:Down" || ErrorLevel="EndKey:Right" || ErrorLevel="EndKey:Left") {
 		browsemode=1
 		mark:=matches>1? matchK[1] : mark
@@ -129,13 +130,11 @@ Loop {
 		matches=1
 		Tooltip,% "> " . Entry .  hist,10,10
 		continue
-	} else if ErrorLevel=Max
-		browsemode=0
-	else
-		break
-	if ErrorLevel=EndKey:Backspace
+	} else if (ErrorLevel="EndKey:Backspace") {
 		StringTrimRight, Entry, Entry, 1
-	else if (char>ctrZ) {
+	} else if ErrorLevel!=Max
+		break
+	if (char>ctrZ) {
 		Entry.=char
 		NotFirstPress=0
 	} else if (char=ctrU)
