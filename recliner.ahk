@@ -105,9 +105,8 @@ matchV := Object()
 matchK := Object()
 Loop {
 	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{left}{right}{tab}
-	if ErrorLevel=EndKey:Backspace
-		StringTrimRight, Entry, Entry, 1
-	else if (ErrorLevel="EndKey:Up" || ErrorLevel="EndKey:Down" || ErrorLevel="EndKey:Right" || ErrorLevel="EndKey:Left") {
+	if (ErrorLevel="EndKey:Up" || ErrorLevel="EndKey:Down" || ErrorLevel="EndKey:Right" || ErrorLevel="EndKey:Left") {
+		browsemode=1
 		mark:=matches>1? matchK[1] : mark
 		if (mark>=0) {
 			mark+=(ErrorLevel="EndKey:Up"? -1 : ErrorLevel="EndKey:Down"? 1 : ErrorLevel="EndKey:Left"? -12 : 12)*NotFirstPress
@@ -130,8 +129,12 @@ Loop {
 		matches=1
 		Tooltip,% "> " . Entry .  hist,10,10
 		continue
-	} else if ErrorLevel!=Max
+	} else if ErrorLevel=Max
+		browsemode=0
+	else
 		break
+	if ErrorLevel=EndKey:Backspace
+		StringTrimRight, Entry, Entry, 1
 	else if (char>ctrZ) {
 		Entry.=char
 		NotFirstPress=0
@@ -156,9 +159,9 @@ Loop {
 			* The arrow keys navigates the log. The starting point is either the first search
 			result or the last returned entry on an empty prompt.
 			* More than 12 presets can be set. Presets appear first in recliner.log and the search
-			and can serve to conceptually differentiate between autotext and log entries.`n
-			* To make entering consecutive entries easier, press enter on a blank prompt to send
-			the next line.
+			and can serve to conceptually differentiate between autotext and log entries.
+			* To make entering consecutive entries easier, press enter on a blank prompt to send the
+			next line.
 			EDITING RECLINER.LOG
 			* Only lines longer than %min_chars% characters will be stored in the log.
 			* The line "### End Presets ###" separates presets from log entries.
@@ -206,7 +209,12 @@ Loop {
 if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 	fN:=SubStr(ErrorLevel,9)
 	if fN<=12
-		if (matches<=1) {
+		if browsemode=1
+			SendRaw,% mark>=0? pre[fN+start] : log[fN+start]
+		else if (matches>fN) {
+			SendRaw,% matchV[fN]
+			mark:=matchK[fN]
+		} else if (matches<=1)
 			if (Entry!="") {
 				pre[fN-1]:=Entry
 				presets=
@@ -215,12 +223,10 @@ if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 				GoSub, uiLoop
 			} else
 				SendRaw,% pre[fN-1]
-		} else if (matches>fN) {
-			SendRaw,% matchV[fN]
-			mark:=matchK[fN]
-		}
 } else if ErrorLevel!=EndKey:Escape
-	if (matches>1) {
+	if browsemode=1
+		SendRaw,% Entry
+	else if (matches>1) {
 		SendRaw,% matchV[1]
 		mark:=matchK[1]
 	} else if (Entry="" && ErrorLevel="EndKey:Enter") {
