@@ -1,4 +1,5 @@
 #NoEnv
+#SingleInstance force
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 StringCaseSense, Off
@@ -94,14 +95,15 @@ MenuExit:
 	ExitApp
 
 uiLoop:
-ToolTip,> `n^Help ^U:clear ^V:paste ^Save arrows:history%presets%,10,10
+next := mark>=0? (mark+1>=preL? preL-1 : mark+1) : (-mark>logL? -logL-1 : mark-1)
+ToolTip,% ">`n^Help ^U:clear ^V:paste ^Save arrows:history`nEnter: " . (next>=0? pre[next] : log[-next-1]) . presets,10,10
 matches:=1
 Entry=
 NotFirstPress=0
 matchV := Object()
 matchK := Object()
-Loop
-{	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{left}{right}{tab}
+Loop {
+	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{left}{right}{tab}
 	if ErrorLevel=EndKey:Backspace
 		StringTrimRight, Entry, Entry, 1
 	else if (ErrorLevel="EndKey:Up" || ErrorLevel="EndKey:Down" || ErrorLevel="EndKey:Right" || ErrorLevel="EndKey:Left") {
@@ -154,6 +156,8 @@ Loop
 			result or the last returned entry on an empty prompt.
 			* More than 12 presets can be set. Presets appear first in recliner.log and the search
 			and can serve to conceptually differentiate between autotext and log entries.`n
+			* To make entering consecutive entries easier, press enter on a blank prompt to send
+			the next line.
 			EDITING RECLINER.LOG
 			* Only lines longer than %min_chars% characters will be stored in the log.
 			* The line "### End Presets ###" separates presets from log entries.
@@ -168,7 +172,8 @@ Loop
 	}
 	matches:=1
 	if !Entry
-	{	Tooltip,> %presets%,10,10
+	{
+		ToolTip,% ">`nEnter: " . (next>=0? pre[next] : log[-next-1]) . presets,10,10
 		continue
 	}
 	print=> %Entry%
@@ -213,7 +218,29 @@ if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 			SendRaw,% matchV[fN]
 			mark:=matchK[fN]
 		}
-} else if ErrorLevel!=EndKey:Escape
+} else if ErrorLevel=EndKey:Enter
+	if (matches>1) {
+		SendRaw,% matchV[1]
+		mark:=matchK[1]
+	} else if (Entry="") {
+		mark := mark>=0? (mark+1>=preL? preL-1 : mark+1) : (-mark>logL? -logL-1 : mark-1)
+		Sendraw,% pre[mark]
+	} else {
+		count=0
+		while (pre[count]!="" && count<12)
+			count++
+		if count=12
+			pre[preL++]:=Entry
+		else {
+			pre[count]:=Entry
+			presets=
+			Loop 12
+				presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
+		}
+		if ErrorLevel=EndKey:Enter
+			SendRaw,% Entry
+	}
+else if ErrorLevel!=EndKey:Escape
 	if (matches>1) {
 		SendRaw,% matchV[1]
 		mark:=matchK[1]

@@ -16,3 +16,4 @@ Install [Autohotkey](http://www.autohotkey.com/) and run [recliner.ahk](https://
 * Without search results, the arrow keys will navigate the history starting with the last returned entry. With search results, navigation starts at the first search result.
 * More than 12 presets can be set. The inaccessible presets can serve to differentiate between autotext and log. Presets appear first in recliner.log and search results.
 * Only lines longer than 14 characters will be stored.
+* To make entering consecutive entries easier, press enter on a blank prompt to send
