@@ -96,7 +96,8 @@ MenuExit:
 
 uiLoop:
 next := mark>=0? (mark+1>=preL? preL-1 : mark+1) : (-mark>logL? -logL-1 : mark-1)
-ToolTip,% ">`n^Help ^U:clear ^V:paste ^Save arrows:history`nEnter: " . (next>=0? pre[next] : log[-next-1]) . presets,10,10
+nextEnt := next>=0? pre[next] : log[-next-1]
+ToolTip,% ">`n^Help ^U:clear ^V:paste ^Save arrows:history`nEnter: " . (StrLen(nextEnt) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets,10,10
 matches:=1
 Entry=
 NotFirstPress=0
@@ -173,7 +174,7 @@ Loop {
 	matches:=1
 	if !Entry
 	{
-		ToolTip,% ">`nEnter: " . (next>=0? pre[next] : log[-next-1]) . presets,10,10
+		ToolTip,% ">`nEnter: " . (StrLen(nextDisP) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets,10,10
 		continue
 	}
 	print=> %Entry%
@@ -218,32 +219,13 @@ if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 			SendRaw,% matchV[fN]
 			mark:=matchK[fN]
 		}
-} else if ErrorLevel=EndKey:Enter
+} else if ErrorLevel!=EndKey:Escape
 	if (matches>1) {
 		SendRaw,% matchV[1]
 		mark:=matchK[1]
-	} else if (Entry="") {
-		mark := mark>=0? (mark+1>=preL? preL-1 : mark+1) : (-mark>logL? -logL-1 : mark-1)
-		Sendraw,% pre[mark]
-	} else {
-		count=0
-		while (pre[count]!="" && count<12)
-			count++
-		if count=12
-			pre[preL++]:=Entry
-		else {
-			pre[count]:=Entry
-			presets=
-			Loop 12
-				presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
-		}
-		if ErrorLevel=EndKey:Enter
-			SendRaw,% Entry
-	}
-else if ErrorLevel!=EndKey:Escape
-	if (matches>1) {
-		SendRaw,% matchV[1]
-		mark:=matchK[1]
+	} else if (Entry="" && ErrorLevel="EndKey:Enter") {
+		mark := next
+		Sendraw,% nextEnt
 	} else {
 		count=0
 		while (pre[count]!="" && count<12)
