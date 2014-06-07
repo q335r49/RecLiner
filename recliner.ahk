@@ -40,6 +40,7 @@ while preL < 12
 Loop 12
 	presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
 mark:=0
+Menu, Tray, Nostandard
 Menu, Tray, add, &Edit log, MenuEditLog
 Menu, Tray, add, &Reload from log, MenuReload
 Menu, Tray, add
@@ -54,11 +55,7 @@ Loop {
 				StringGetPos,pos,out,%A_Space%,R1
 				if !ErrorLevel
 					StringLeft,out,out,% pos+1
-			} else if (A_LoopField = "!")
-				out.="{!}"
-			else if (A_LoopField = "#")
-				out.="{#}"
-			else if (A_LoopField = ctrH)
+			} else if (A_LoopField = ctrH)
 				StringTrimRight,out,out,1
 			else if (A_LoopField = ctrA)
 				out=
@@ -158,15 +155,13 @@ Loop
 			* More than 12 presets can be set. Presets appear first in recliner.log and the search
 			and can serve to conceptually differentiate between autotext and log entries.`n
 			EDITING RECLINER.LOG
-			* Use {enter} to send a line break and {!} to send "!".
-			* See www.autohotkey.com/docs/commands/Send.htm for a list of special characters.
 			* Only lines longer than %min_chars% characters will be stored in the log.
 			* The line "### End Presets ###" separates presets from log entries.
 		),10,10
 		continue
-	} else if (char=ctrV)
+	} else if (char=ctrV) {
 		Entry=%clipboard%
-	else if (char=ctrS) { 
+	} else if (char=ctrS) { 
 		Gosub, WriteLog
 		Tooltip
 		return
@@ -213,14 +208,14 @@ if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 					presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
 				GoSub, uiLoop
 			} else
-				Send,% pre[fN-1]
+				SendRaw,% pre[fN-1]
 		} else if (matches>fN) {
-			Send,% matchV[fN]
+			SendRaw,% matchV[fN]
 			mark:=matchK[fN]
 		}
 } else if ErrorLevel!=EndKey:Escape
 	if (matches>1) {
-		Send,% matchV[1]
+		SendRaw,% matchV[1]
 		mark:=matchK[1]
 	} else {
 		count=0
@@ -235,7 +230,7 @@ if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 				presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
 		}
 		if ErrorLevel=EndKey:Enter
-			Send,% Entry
+			SendRaw,% Entry
 	}
 Tooltip
 return
