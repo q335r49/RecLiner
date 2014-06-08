@@ -164,8 +164,8 @@ Loop {
 			TIPS
 			* Only lines longer than %min_chars% characters will be stored in the log (change in recliner.ini).
 			* In recliner.log, the line "### End Presets ###" separates presets from log entries.
-			* To send special characters (such as line breaks), append the entry with '##'. For example,
-			"##blah blah{!}{enter}blah" will send the two lines "blah blah!" and "blah". For a list of all
+			* To send special characters (such as line breaks), append the entry with '###'. For example,
+			"###blah blah{!}{enter}blah" will send the two lines "blah blah!" and "blah". For a list of
 			special characters, see www.autohotkey.com/docs/commands/Send.htm
 		),10,10
 		continue
@@ -213,45 +213,43 @@ if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 	if fN<=12
 		if (browsemode=1) {
 			echo := mark>=0? pre[fN+start] : log[fN+start]
-			if (SubStr(echo,1,2)="##")
-				Send % SubStr(echo,3)
+			if (SubStr(echo,1,3)="###")
+				Send % SubStr(echo,4)
 			else
 				SendRaw %echo%
 		} else if (matches>fN) {
-			if (SubStr(matchV[fN],1,2)="##")
-				Send % SubStr(matchV[fN],3)
+			if (SubStr(matchV[fN],1,3)="###")
+				Send % SubStr(matchV[fN],4)
 			else
 				SendRaw % matchV[fN]
 			mark:=matchK[fN]
-		} else if (matches<=1) {
+		} else if (matches<=1)
 			if (Entry!="") {
 				pre[fN-1]:=Entry
 				presets=
 				Loop 12
 					presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
 				GoSub, uiLoop
-			} else if (SubStr(pre[fN-1],1,2)="##")
-				Send % SubStr(pre[fN-1],3)
+			} else if (SubStr(pre[fN-1],1,3)="###")
+				Send % SubStr(pre[fN-1],4)
 			else
 				SendRaw % pre[fN-1]
-
-		}
 } else if ErrorLevel!=EndKey:Escape
 	if (browsemode=1) {
-		if (SubStr(Entry,1,2)="##")
-			Send % SubStr(Entry,3)
+		if (SubStr(Entry,1,3)="###")
+			Send % SubStr(Entry,4)
 		else
 			SendRaw %Entry%
 	} else if (matches>1) {
-		if (SubStr(matchV[1],1,2)="##")
-			Send % SubStr(matchV[1],3)
+		if (SubStr(matchV[1],1,3)="###")
+			Send % SubStr(matchV[1],4)
 		else
 			SendRaw % matchV[1]
 		mark:=matchK[1]
 	} else if (Entry="") {
 		mark := next
-		if (SubStr(nextEnt,1,2)="##")
-			Send % SubStr(nextEnt,3)
+		if (SubStr(nextEnt,1,3)="###")
+			Send % SubStr(nextEnt,4)
 		else
 			SendRaw %nextEnt%
 	} else {
@@ -266,8 +264,8 @@ if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 			Loop 12
 				presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
 		}
-		if (SubStr(Entry,1,2)="##")
-			Send % SubStr(Entry,3)
+		if (SubStr(Entry,1,3)="###")
+			Send % SubStr(Entry,4)
 		else
 			SendRaw %Entry%
 	}

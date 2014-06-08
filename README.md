@@ -20,4 +20,4 @@ Install [Autohotkey](http://www.autohotkey.com/) and run [recliner.ahk](https://
 ####Tips
 * Only lines longer than 14 characters will be stored (change in recliner.ini).
 * In recliner.log, the line "### End Presets ###" separates presets from log entries.
-* To send special characters (such as line breaks), append the entry with '##'. For example, "##blah blah{!}{enter}blah" will send the two lines "blah blah!" and "blah". For a list of all special characters, see [autohotkey help](http://www.autohotkey.com/docs/commands/Send.htm)
+* To send special characters (such as line breaks), append the entry with '###'. For example, "###blah blah{!}{enter}blah" will send the two lines "blah blah!" and "blah". For a list of special characters, see [autohotkey help](http://www.autohotkey.com/docs/commands/Send.htm)
