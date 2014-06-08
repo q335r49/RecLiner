@@ -104,7 +104,7 @@ NotFirstPress=0
 matchV := Object()
 matchK := Object()
 Loop {
-	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{left}{right}{tab}
+	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{left}{right}
 	browsemode=0
 	if (ErrorLevel="EndKey:Up" || ErrorLevel="EndKey:Down" || ErrorLevel="EndKey:Right" || ErrorLevel="EndKey:Left") {
 		browsemode=1
@@ -203,34 +203,54 @@ Loop {
 			if (++matches>12)
 				break
 		}
-	Tooltip, % matches>1? print : print . "`n   --- no matches ---`nf1..f10 - add to presets`nenter - append to presets & send`ntab - append to presets",10,10
+	Tooltip, % matches>1? print : print . "`n   --- no matches ---`nf1..f10 add to presets`nEnter: append to presets & send",10,10
 }
 if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 	fN:=SubStr(ErrorLevel,9)
 	if fN<=12
-		if browsemode=1
-			SendRaw,% mark>=0? pre[fN+start] : log[fN+start]
-		else if (matches>fN) {
-			SendRaw,% matchV[fN]
+		if (browsemode=1) {
+			echo := mark>=0? pre[fN+start] : log[fN+start]
+			if (SubStr(echo,1,2)="##")
+				Send % SubStr(echo,3)
+			else
+				SendRaw %echo%
+		} else if (matches>fN) {
+			if (SubStr(matchV[fN],1,2)="##")
+				Send % SubStr(matchV[fN],3)
+			else
+				SendRaw % matchV[fN]
 			mark:=matchK[fN]
-		} else if (matches<=1)
+		} else if (matches<=1) {
 			if (Entry!="") {
 				pre[fN-1]:=Entry
 				presets=
 				Loop 12
 					presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
 				GoSub, uiLoop
-			} else
-				SendRaw,% pre[fN-1]
+			} else if (SubStr(pre[fN-1],1,2)="##")
+				Send % SubStr(pre[fN-1],3)
+			else
+				SendRaw % pre[fN-1]
+
+		}
 } else if ErrorLevel!=EndKey:Escape
-	if browsemode=1
-		SendRaw,% Entry
-	else if (matches>1) {
-		SendRaw,% matchV[1]
+	if (browsemode=1) {
+		if (SubStr(Entry,1,2)="##")
+			Send % SubStr(Entry,3)
+		else
+			SendRaw %Entry%
+	} else if (matches>1) {
+		if (SubStr(matchV[1],1,2)="##")
+			Send % SubStr(matchV[1],3)
+		else
+			SendRaw % matchV[1]
 		mark:=matchK[1]
-	} else if (Entry="" && ErrorLevel="EndKey:Enter") {
+	} else if (Entry="") {
 		mark := next
-		Sendraw,% nextEnt
+		if (SubStr(nextEnt,1,2)="##")
+			Send % SubStr(nextEnt,3)
+		else
+			SendRaw %nextEnt%
 	} else {
 		count=0
 		while (pre[count]!="" && count<12)
@@ -243,8 +263,10 @@ if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 			Loop 12
 				presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
 		}
-		if ErrorLevel=EndKey:Enter
-			SendRaw,% Entry
+		if (SubStr(Entry,1,2)="##")
+			Send % SubStr(Entry,3)
+		else
+			SendRaw %Entry%
 	}
 Tooltip
 return
