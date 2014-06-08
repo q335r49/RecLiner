@@ -142,7 +142,7 @@ Loop {
 	else if (char=ctrH) {
 		Tooltip,
 		( LTrim
-			RECLINER v1.1`n
+			RECLINER v1.2`n
 			Record and recall every line you type! On Enter, Esc, or Tab, the line just typed will
 			be stored in a searchable history.
 			* Remember addresses, serial numbers, and usernames!
@@ -160,10 +160,13 @@ Loop {
 			* More than 12 presets can be set. Presets appear first in recliner.log and the search
 			and can serve to conceptually differentiate between autotext and log entries.
 			* To make entering consecutive entries easier, press enter on a blank prompt to send the
-			next line.
-			EDITING RECLINER.LOG
-			* Only lines longer than %min_chars% characters will be stored in the log.
-			* The line "### End Presets ###" separates presets from log entries.
+			next line.`n
+			TIPS
+			* Only lines longer than %min_chars% characters will be stored in the log (change in recliner.ini).
+			* In recliner.log, the line "### End Presets ###" separates presets from log entries.
+			* To send special characters (such as line breaks), append the entry with '##'. For example,
+			"##blah blah{!}{enter}blah" will send the two lines "blah blah!" and "blah". For a list of all
+			special characters, see www.autohotkey.com/docs/commands/Send.htm
 		),10,10
 		continue
 	} else if (char=ctrV) {
