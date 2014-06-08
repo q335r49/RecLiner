@@ -103,10 +103,39 @@ Entry=
 NotFirstPress=0
 matchV := Object()
 matchK := Object()
+deleteK := {}
 Loop {
-	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{left}{right}
+	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{left}{right}{delete}
 	browsemode=0
-	if (ErrorLevel="EndKey:Up" || ErrorLevel="EndKey:Down" || ErrorLevel="EndKey:Right" || ErrorLevel="EndKey:Left") {
+	if (ErrorLevel="EndKey:Delete") {
+		browsemode=1
+		if NotFirstPress
+			if deleteK.HasKey(mark)
+				deleteK.Remove(mark,"")
+			else
+				deleteK[mark]:=1
+		if (mark>=0) {
+			mark+=NotFirstPress
+			mark:=mark>=preL? preL-1 : mark<0? 0 : mark
+			Entry:=pre[mark]
+			start:=mark//12*12-1
+			hist=
+			Loop 12
+				hist.="`n" . (deleteK.HasKey(A_Index+start)? "X " : "") . " f" . A_Index . ": " . (A_Index+start=mark? "[" . A_Index+start+1 . "]" : A_Index+start+1) . " " . (StrLen(pre[A_Index+start])>50? (SubStr(pre[A_Index+start],1,50) . " ...") : pre[A_Index+start]) 
+		} else {
+			mark-=NotFirstPress
+			mark:=-mark-1>logL? -logL-1 : mark>-1? -1 : mark 
+			Entry:=log[-mark-1]
+			start:=(-mark-1)//12*12-1
+			hist=
+			Loop 12
+				hist.="`n" . (deleteK.HasKey(-A_Index-start-1)? "X " : "") . " f" . A_Index . ": " . (A_Index+start=-mark-1? "[" . A_Index+start+1 . "]" : A_Index+start+1) . " " . (StrLen(log[A_Index+start])>50? (SubStr(log[A_Index+start],1,50) . " ...") : log[A_Index+start]) 
+		}
+		NotFirstPress=1
+		matches=1
+		Tooltip,% "> " . Entry .  hist,10,10
+		continue
+	} else if (ErrorLevel="EndKey:Up" || ErrorLevel="EndKey:Down" || ErrorLevel="EndKey:Right" || ErrorLevel="EndKey:Left") {
 		browsemode=1
 		mark:=matches>1? matchK[1] : mark
 		if (mark>=0) {
@@ -116,7 +145,7 @@ Loop {
 			start:=mark//12*12-1
 			hist=
 			Loop 12
-				hist.="`nf" . A_Index . ": " . (A_Index+start=mark? "[" . A_Index+start+1 . "]" : A_Index+start+1) . " " . (StrLen(pre[A_Index+start])>50? (SubStr(pre[A_Index+start],1,50) . " ...") : pre[A_Index+start]) 
+				hist.="`n" . (deleteK.HasKey(A_Index+start)? "X " : "") . " f" . A_Index . ": " . (A_Index+start=mark? "[" . A_Index+start+1 . "]" : A_Index+start+1) . " " . (StrLen(pre[A_Index+start])>50? (SubStr(pre[A_Index+start],1,50) . " ...") : pre[A_Index+start]) 
 		} else {
 			mark+=(ErrorLevel="EndKey:Up"? 1 : ErrorLevel="EndKey:Down"? -1 : ErrorLevel="EndKey:Left"? 12 : -12)*NotFirstPress
 			mark:=-mark-1>logL? -logL-1 : mark>-1? -1 : mark 
@@ -124,7 +153,7 @@ Loop {
 			start:=(-mark-1)//12*12-1
 			hist=
 			Loop 12
-				hist.="`nf" . A_Index . ": " . (A_Index+start=-mark-1? "[" . A_Index+start+1 . "]" : A_Index+start+1) . " " . (StrLen(log[A_Index+start])>50? (SubStr(log[A_Index+start],1,50) . " ...") : log[A_Index+start]) 
+				hist.="`n" . (deleteK.HasKey(-A_Index-start-1)? "X " : "") . " f" . A_Index . ": " . (A_Index+start=-mark-1? "[" . A_Index+start+1 . "]" : A_Index+start+1) . " " . (StrLen(log[A_Index+start])>50? (SubStr(log[A_Index+start],1,50) . " ...") : log[A_Index+start]) 
 		}
 		NotFirstPress=1
 		matches=1
@@ -173,13 +202,12 @@ Loop {
 		Entry=%clipboard%
 	} else if (char=ctrS) { 
 		Gosub, WriteLog
-		Tooltip
+		GoSub, Cleanup
 		return
 	}
 	matches:=1
 	if !Entry
-	{
-		ToolTip,% ">`nEnter: " . (StrLen(nextDisP) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets,10,10
+	{	ToolTip,% ">`nEnter: " . (StrLen(nextDisP) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets,10,10
 		continue
 	}
 	print=> %Entry%
@@ -206,22 +234,15 @@ Loop {
 			if (++matches>12)
 				break
 		}
-	Tooltip, % matches>1? print : print . "`n   --- no matches ---`nf1..f10 add to presets`nEnter: append to presets & send",10,10
+	Tooltip, % matches>1? print : print . "`n   --- no matches ---`nf1..f12: set`nenter: append to presets & send",10,10
 }
 if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 	fN:=SubStr(ErrorLevel,9)
 	if fN<=12
-		if (browsemode=1) {
-			echo := mark>=0? pre[fN+start] : log[fN+start]
-			if (SubStr(echo,1,3)="###")
-				Send % SubStr(echo,4)
-			else
-				SendRaw %echo%
-		} else if (matches>fN) {
-			if (SubStr(matchV[fN],1,3)="###")
-				Send % SubStr(matchV[fN],4)
-			else
-				SendRaw % matchV[fN]
+		if (browsemode=1)
+			SendString(mark>=0? pre[fN+start] : log[fN+start])
+		else if (matches>fN) {
+			SendString(matchV[fN])
 			mark:=matchK[fN]
 		} else if (matches<=1)
 			if (Entry!="") {
@@ -230,28 +251,17 @@ if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 				Loop 12
 					presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
 				GoSub, uiLoop
-			} else if (SubStr(pre[fN-1],1,3)="###")
-				Send % SubStr(pre[fN-1],4)
-			else
-				SendRaw % pre[fN-1]
+			} else
+				SendString(pre[fn-1])
 } else if ErrorLevel!=EndKey:Escape
-	if (browsemode=1) {
-		if (SubStr(Entry,1,3)="###")
-			Send % SubStr(Entry,4)
-		else
-			SendRaw %Entry%
-	} else if (matches>1) {
-		if (SubStr(matchV[1],1,3)="###")
-			Send % SubStr(matchV[1],4)
-		else
-			SendRaw % matchV[1]
+	if (browsemode=1)
+		SendString(Entry)
+	else if (matches>1) {
+		SendString(matchV[1])
 		mark:=matchK[1]
 	} else if (Entry="") {
 		mark := next
-		if (SubStr(nextEnt,1,3)="###")
-			Send % SubStr(nextEnt,4)
-		else
-			SendRaw %nextEnt%
+		SendString(nextEnt)
 	} else {
 		count=0
 		while (pre[count]!="" && count<12)
@@ -264,10 +274,17 @@ if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 			Loop 12
 				presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
 		}
-		if (SubStr(Entry,1,3)="###")
-			Send % SubStr(Entry,4)
-		else
-			SendRaw %Entry%
+		SendString(Entry)
 	}
+Cleanup:
+for key in deleteK
+	if key>=0
+		pre.Remove(key)
+	else
+		log.Remove(-key-1)
 Tooltip
 return
+
+SendString(string) {
+	Send % SubStr(string,1,3)="###"? SubStr(string,4) : "{Raw}" . string
+}
