@@ -38,8 +38,7 @@ Loop, Read, recliner.log
 MsgBox, % logL . " logs " . preL . " presets loaded from recliner.log"
 while preL < 12
 	pre[preL++]:=""
-Loop 12
-	presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
+Gosub, RebuildPresets
 mark:=0
 Menu, Tray, Nostandard
 Menu, Tray, add, &Edit log, MenuEditLog
@@ -98,24 +97,25 @@ uiLoop:
 next := mark>=0? (mark+1>=preL? preL-1 : mark+1) : (-mark>logL? -logL-1 : mark-1)
 nextEnt := next>=0? pre[next] : log[-next-1]
 ToolTip,% ">`n^Help ^U:clear ^V:paste ^Save arrows:history`nEnter: " . (StrLen(nextEnt) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets,10,10
-matches:=1
+matches := 1
 Entry=
 NotFirstPress=0
 matchV := Object()
 matchK := Object()
 deleteK := {}
+nmode=0
 Loop {
 	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{left}{right}{delete}
-	browsemode=0
-	if (ErrorLevel="EndKey:Delete") {
-		browsemode=1
-		if NotFirstPress
+	if (ErrorLevel="EndKey:Up" || ErrorLevel="EndKey:Down" || ErrorLevel="EndKey:Right" || ErrorLevel="EndKey:Left" || ErrorLevel="EndKey:Delete") {
+		nmode=1
+		mark:=matches>1? matchK[1] : mark
+		if (ErrorLevel="EndKey:Delete") && NotFirstPress
 			if deleteK.HasKey(mark)
 				deleteK.Remove(mark,"")
 			else
 				deleteK[mark]:=1
 		if (mark>=0) {
-			mark+=NotFirstPress
+			mark+=(ErrorLevel="EndKey:Up"? -1 : (ErrorLevel="EndKey:Down" || ErrorLevel="EndKey:Delete")? 1 : ErrorLevel="EndKey:Left"? -12 : 12)*NotFirstPress
 			mark:=mark>=preL? preL-1 : mark<0? 0 : mark
 			Entry:=pre[mark]
 			start:=mark//12*12-1
@@ -123,31 +123,7 @@ Loop {
 			Loop 12
 				hist.="`n" . (deleteK.HasKey(A_Index+start)? "X " : "") . " f" . A_Index . ": " . (A_Index+start=mark? "[" . A_Index+start+1 . "]" : A_Index+start+1) . " " . (StrLen(pre[A_Index+start])>50? (SubStr(pre[A_Index+start],1,50) . " ...") : pre[A_Index+start]) 
 		} else {
-			mark-=NotFirstPress
-			mark:=-mark-1>logL? -logL-1 : mark>-1? -1 : mark 
-			Entry:=log[-mark-1]
-			start:=(-mark-1)//12*12-1
-			hist=
-			Loop 12
-				hist.="`n" . (deleteK.HasKey(-A_Index-start-1)? "X " : "") . " f" . A_Index . ": " . (A_Index+start=-mark-1? "[" . A_Index+start+1 . "]" : A_Index+start+1) . " " . (StrLen(log[A_Index+start])>50? (SubStr(log[A_Index+start],1,50) . " ...") : log[A_Index+start]) 
-		}
-		NotFirstPress=1
-		matches=1
-		Tooltip,% "> " . Entry .  hist,10,10
-		continue
-	} else if (ErrorLevel="EndKey:Up" || ErrorLevel="EndKey:Down" || ErrorLevel="EndKey:Right" || ErrorLevel="EndKey:Left") {
-		browsemode=1
-		mark:=matches>1? matchK[1] : mark
-		if (mark>=0) {
-			mark+=(ErrorLevel="EndKey:Up"? -1 : ErrorLevel="EndKey:Down"? 1 : ErrorLevel="EndKey:Left"? -12 : 12)*NotFirstPress
-			mark:=mark>=preL? preL-1 : mark<0? 0 : mark
-			Entry:=pre[mark]
-			start:=mark//12*12-1
-			hist=
-			Loop 12
-				hist.="`n" . (deleteK.HasKey(A_Index+start)? "X " : "") . " f" . A_Index . ": " . (A_Index+start=mark? "[" . A_Index+start+1 . "]" : A_Index+start+1) . " " . (StrLen(pre[A_Index+start])>50? (SubStr(pre[A_Index+start],1,50) . " ...") : pre[A_Index+start]) 
-		} else {
-			mark+=(ErrorLevel="EndKey:Up"? 1 : ErrorLevel="EndKey:Down"? -1 : ErrorLevel="EndKey:Left"? 12 : -12)*NotFirstPress
+			mark+=(ErrorLevel="EndKey:Up"? 1 : (ErrorLevel="EndKey:Down" || ErrorLevel="EndKey:Delete")? -1 : ErrorLevel="EndKey:Left"? 12 : -12)*NotFirstPress
 			mark:=-mark-1>logL? -logL-1 : mark>-1? -1 : mark 
 			Entry:=log[-mark-1]
 			start:=(-mark-1)//12*12-1
@@ -161,13 +137,61 @@ Loop {
 		continue
 	} else if (ErrorLevel="EndKey:Backspace") {
 		StringTrimRight, Entry, Entry, 1
-	} else if ErrorLevel!=Max
+		nmode=0
+	} else if (SubStr(ErrorLevel,1,8)="EndKey:F") {
+		fN:=SubStr(ErrorLevel,9)
+		if fN<=12
+			if (nmode=1) {
+				SendString(mark>=0? pre[fN+start] : log[fN+start])
+				Gosub, ProcDel
+				if deletions>0
+					MsgBox, %deletions% entries removed
+				else
+					SendString(Entry)
+			} else if (matches>fN) {
+				SendString(matchV[fN])
+				mark:=matchK[fN]
+			} else if (matches<=1)
+				if (Entry!="") {
+					pre[fN-1]:=Entry
+					Gosub, RebuildPresets
+					GoSub, uiLoop
+				} else
+					SendString(pre[fn-1])
 		break
-	if (char>ctrZ) {
+	} else if (ErrorLevel="EndKey:Enter") {
+		if (nmode=1) {
+			Gosub, ProcDel
+			if deletions>0
+				MsgBox, %deletions% entries removed
+			else
+				SendString(Entry)
+		} else if (matches>1) {
+			SendString(matchV[1])
+			mark:=matchK[1]
+		} else if (Entry="") {
+			mark := next
+			SendString(nextEnt)
+		} else {
+			count=0
+			while (pre[count]!="" && count<12)
+				count++
+			if count=12
+				pre[preL++]:=Entry
+			else {
+				pre[count]:=Entry
+				Gosub, RebuildPresets
+			}
+			SendString(Entry)
+		}
+		break
+	} else if (ErrorLevel!="Max") {
+		break
+	} else if (char>ctrZ) {
 		Entry.=char
 		NotFirstPress=0
 	} else if (char=ctrU)
-		Entry:=""
+		Entry := ""
 	else if (char=ctrH) {
 		Tooltip,
 		( LTrim
@@ -198,92 +222,59 @@ Loop {
 			special characters, see www.autohotkey.com/docs/commands/Send.htm
 		),10,10
 		continue
-	} else if (char=ctrV) {
-		Entry=%clipboard%
 	} else if (char=ctrS) { 
 		Gosub, WriteLog
-		GoSub, Cleanup
-		return
-	}
+		GoSub, ProcDel
+		break
+	} else if (char=ctrV)
+		Entry=%clipboard%
 	matches:=1
-	if !Entry
-	{	ToolTip,% ">`nEnter: " . (StrLen(nextDisP) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets,10,10
-		continue
-	}
-	print=> %Entry%
-	for key,value in pre {
-		StringGetPos,pos,value,%Entry%
-		if (pos=-1)
-			continue
-		matchV[matches] := value
-		matchK[matches] := key
-		len:=StrLen(value)
-		print.="`nf" . matches . " " . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
-		if (++matches>12)
-			break
-	}
-	if matches<=12
-		for key,value in log {
+	if Entry
+	{	print=> %Entry%
+		for key,value in pre {
 			StringGetPos,pos,value,%Entry%
 			if (pos=-1)
 				continue
 			matchV[matches] := value
-			matchK[matches] := -key-1
+			matchK[matches] := key
 			len:=StrLen(value)
 			print.="`nf" . matches . " " . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
 			if (++matches>12)
 				break
 		}
-	Tooltip, % matches>1? print : print . "`n   --- no matches ---`nf1..f12: set`nenter: append to presets & send",10,10
+		if matches<=12
+			for key,value in log {
+				StringGetPos,pos,value,%Entry%
+				if (pos=-1)
+					continue
+				matchV[matches] := value
+				matchK[matches] := -key-1
+				len:=StrLen(value)
+				print.="`nf" . matches . " " . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
+				if (++matches>12)
+					break
+			}
+		Tooltip, % matches>1? print : print . "`n   --- no matches ---`nf1..f12: set`nenter: append to presets & send",10,10
+	} else
+		ToolTip,% ">`nEnter: " . (StrLen(nextDisP) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets,10,10
 }
-if (SubStr(ErrorLevel,1,8)="EndKey:F") {
-	fN:=SubStr(ErrorLevel,9)
-	if fN<=12
-		if (browsemode=1)
-			SendString(mark>=0? pre[fN+start] : log[fN+start])
-		else if (matches>fN) {
-			SendString(matchV[fN])
-			mark:=matchK[fN]
-		} else if (matches<=1)
-			if (Entry!="") {
-				pre[fN-1]:=Entry
-				presets=
-				Loop 12
-					presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
-				GoSub, uiLoop
-			} else
-				SendString(pre[fn-1])
-} else if ErrorLevel!=EndKey:Escape
-	if (browsemode=1)
-		SendString(Entry)
-	else if (matches>1) {
-		SendString(matchV[1])
-		mark:=matchK[1]
-	} else if (Entry="") {
-		mark := next
-		SendString(nextEnt)
-	} else {
-		count=0
-		while (pre[count]!="" && count<12)
-			count++
-		if count=12
-			pre[preL++]:=Entry
-		else {
-			pre[count]:=Entry
-			presets=
-			Loop 12
-				presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
-		}
-		SendString(Entry)
-	}
-Cleanup:
-for key in deleteK
-	if key>=0
-		pre.Remove(key)
-	else
-		log.Remove(-key-1)
 Tooltip
 return
+
+ProcDel:
+	deletions=0
+	for key in deleteK {
+		deletions++
+		if key>=0
+			pre[key]:=""
+		else
+			log.Remove(-key-1)
+	}
+RebuildPresets:
+	presets:=""
+	Loop 12
+		presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
+	return
 
 SendString(string) {
 	Send % SubStr(string,1,3)="###"? SubStr(string,4) : "{Raw}" . string
