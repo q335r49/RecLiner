@@ -44,6 +44,7 @@ Menu, Tray, Nostandard
 Menu, Tray, add, &Edit log, MenuEditLog
 Menu, Tray, add, &Reload from log, MenuReload
 Menu, Tray, add
+Menu, Tray, add, S&ave, WriteLog
 Menu, Tray, add, E&xit, MenuExit
 Loop {
 	Input, k, V M, {enter}{esc}{tab}
