@@ -19,7 +19,6 @@ if !FileExist("recliner.ini")
 		;MinLength=14
 		;   Strings shorter than this length will not be stored in the archive (default 14)
 	), recliner.ini
-
 IniRead, mainHotkey, recliner.ini, main, Hotkey, f4
 IniRead, min_chars, recliner.ini, main, MinLength, 14
 Hotkey,%mainHotkey%,uiLoop
@@ -40,6 +39,7 @@ while preL < 12
 	pre[preL++]:=""
 Gosub, RebuildPresets
 mark:=0
+increment := Object("EndKey:Up",-1,"EndKey:Down",1,"EndKey:Delete",1,"EndKey:Left",-12,"EndKey:Right",12,"EndKey:Home",-999999,"EndKey:End",999999)
 Menu, Tray, Nostandard
 Menu, Tray, add, &Edit log, MenuEditLog
 Menu, Tray, add, &Reload from log, MenuReload
@@ -105,8 +105,8 @@ matchK := Object()
 deleteK := {}
 nmode=0
 Loop {
-	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{left}{right}{delete}
-	if (ErrorLevel="EndKey:Up" || ErrorLevel="EndKey:Down" || ErrorLevel="EndKey:Right" || ErrorLevel="EndKey:Left" || ErrorLevel="EndKey:Delete") {
+	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{left}{right}{delete}{home}{end}
+	if (ErrorLevel="EndKey:Up" || ErrorLevel="EndKey:Down" || ErrorLevel="EndKey:Right" || ErrorLevel="EndKey:Left" || ErrorLevel="EndKey:Delete" || ErrorLevel="EndKey:Home" || ErrorLevel="EndKey:End") {
 		nmode=1
 		mark:=matches>1? matchK[1] : mark
 		if (ErrorLevel="EndKey:Delete") && NotFirstPress
@@ -115,7 +115,7 @@ Loop {
 			else
 				deleteK[mark]:=1
 		if (mark>=0) {
-			mark+=(ErrorLevel="EndKey:Up"? -1 : (ErrorLevel="EndKey:Down" || ErrorLevel="EndKey:Delete")? 1 : ErrorLevel="EndKey:Left"? -12 : 12)*NotFirstPress
+			mark+=increment[ErrorLevel]*NotFirstPress
 			mark:=mark>=preL? preL-1 : mark<0? 0 : mark
 			Entry:=pre[mark]
 			start:=mark//12*12-1
@@ -123,7 +123,7 @@ Loop {
 			Loop 12
 				hist.="`n" . (deleteK.HasKey(A_Index+start)? "X " : "") . " f" . A_Index . ": " . (A_Index+start=mark? "[" . A_Index+start+1 . "]" : A_Index+start+1) . " " . (StrLen(pre[A_Index+start])>50? (SubStr(pre[A_Index+start],1,50) . " ...") : pre[A_Index+start]) 
 		} else {
-			mark+=(ErrorLevel="EndKey:Up"? 1 : (ErrorLevel="EndKey:Down" || ErrorLevel="EndKey:Delete")? -1 : ErrorLevel="EndKey:Left"? 12 : -12)*NotFirstPress
+			mark-=increment[ErrorLevel]*NotFirstPress
 			mark:=-mark-1>logL? -logL-1 : mark>-1? -1 : mark 
 			Entry:=log[-mark-1]
 			start:=(-mark-1)//12*12-1
@@ -143,11 +143,6 @@ Loop {
 		if fN<=12
 			if (nmode=1) {
 				SendString(mark>=0? pre[fN+start] : log[fN+start])
-				Gosub, ProcDel
-				if deletions>0
-					MsgBox, %deletions% entries removed
-				else
-					SendString(Entry)
 			} else if (matches>fN) {
 				SendString(matchV[fN])
 				mark:=matchK[fN]
@@ -158,6 +153,9 @@ Loop {
 					GoSub, uiLoop
 				} else
 					SendString(pre[fn-1])
+		Gosub, ProcDel
+		if deletions>0
+			MsgBox, %deletions% entries removed
 		break
 	} else if (ErrorLevel="EndKey:Enter") {
 		if (nmode=1) {
