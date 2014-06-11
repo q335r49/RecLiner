@@ -1,5 +1,5 @@
 #RecLiner
-Record and recall every line you type! On <kbd>enter</kbd>, <kbd>esc</kbd>, or <kbd>tab</kbd>, the line just typed will be stored in a searchable history.
+Record and recall lines that you have typed! On <kbd>enter</kbd>, <kbd>esc</kbd>, or <kbd>tab</kbd>, the line just typed will be stored in a searchable history.
 * Remember addresses, serial numbers, usernames!
 * Have a unified history for command line interfaces!
 * Log online chats!
@@ -13,9 +13,12 @@ Install [Autohotkey](http://www.autohotkey.com/) and run [recliner.ahk](https://
 * Press the hotkey (default: <kbd>f4</kbd>) to bring up a search prompt.
 * Pressing <kbd>f1</kbd> .. <kbd>f12</kbd> on an empty prompt will return the first 12 lines, the 'presets'.
 * Enter text at the prompt and press <kbd>f1</kbd> .. <kbd>f12</kbd> to set presets.
+
+####Browsing history
 * Without search results, the arrow keys will navigate the history starting with the last returned entry. With search results, navigation starts at the first search result.
+* <kbd>home</kbd> and <kbd>end</kbd> will start browsing at the beginning and the end of the list, respectively.
 * More than 12 presets can be set. The inaccessible presets can serve to differentiate between autotext and log. Presets appear first in recliner.log and search results.
-* To make entering consecutive entries easier, press enter on a blank prompt to send
+* To make entering consecutive entries easier, press enter on a blank prompt to send the next line.
 
 ####Tips
 * Only lines longer than 14 characters will be stored (change in recliner.ini).

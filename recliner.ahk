@@ -97,7 +97,7 @@ MenuExit:
 uiLoop:
 next := mark>=0? (mark+1>=preL? preL-1 : mark+1) : (-mark>logL? -logL-1 : mark-1)
 nextEnt := next>=0? pre[next] : log[-next-1]
-ToolTip,% ">`n^Help ^U:clear ^V:paste ^Save arrows:history`nEnter: " . (StrLen(nextEnt) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets,10,10
+ToolTip,% ">`n^Help ^U:clear ^V:paste ^Save arrows:history`nEnter`t" . (StrLen(nextEnt) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets,10,10
 matches := 1
 Entry=
 NotFirstPress=0
@@ -116,21 +116,21 @@ Loop {
 			else
 				deleteK[mark]:=1
 		if (mark>=0) {
-			mark+=browseKeys[ErrorLevel]*NotFirstPress
+			mark+=browseKeys[ErrorLevel]*(NotFirstPress || ErrorLevel="EndKey:Home" || ErrorLevel="EndKey:End")
 			mark:=mark>=preL? preL-1 : mark<0? 0 : mark
 			Entry:=pre[mark]
 			start:=mark//12*12-1
 			hist=
 			Loop 12
-				hist.="`n" . (deleteK.HasKey(A_Index+start)? "X " : "") . " f" . A_Index . ": " . (A_Index+start=mark? "[" . A_Index+start+1 . "]" : A_Index+start+1) . " " . (StrLen(pre[A_Index+start])>50? (SubStr(pre[A_Index+start],1,50) . " ...") : pre[A_Index+start]) 
+				hist.="`n" . (A_Index+start=mark? "{ " : " ") . (deleteK.HasKey(A_Index+start)? "X " : " ") . "F" . A_Index . "`t" . (A_Index+start+1) . " " . (StrLen(pre[A_Index+start])>50? (SubStr(pre[A_Index+start],1,50) . " ...") : pre[A_Index+start]) 
 		} else {
-			mark-=browseKeys[ErrorLevel]*NotFirstPress
+			mark-=browseKeys[ErrorLevel]*(NotFirstPress || ErrorLevel="EndKey:Home" || ErrorLevel="EndKey:End")
 			mark:=-mark-1>logL? -logL-1 : mark>-1? -1 : mark 
 			Entry:=log[-mark-1]
 			start:=(-mark-1)//12*12-1
 			hist=
 			Loop 12
-				hist.="`n" . (deleteK.HasKey(-A_Index-start-1)? "X " : "") . " f" . A_Index . ": " . (A_Index+start=-mark-1? "[" . A_Index+start+1 . "]" : A_Index+start+1) . " " . (StrLen(log[A_Index+start])>50? (SubStr(log[A_Index+start],1,50) . " ...") : log[A_Index+start]) 
+				hist.="`n" . (A_Index+start=-mark-1? "{ " : " ") . (deleteK.HasKey(-A_Index-start-1)? "X " : " ") . "f" . A_Index . "`t" . (A_Index+start+1) . " " . (StrLen(log[A_Index+start])>50? (SubStr(log[A_Index+start],1,50) . " ...") : log[A_Index+start]) 
 		}
 		NotFirstPress=1
 		matches=1
@@ -206,9 +206,10 @@ Loop {
 			* The function keys [f1] .. [f12] serve multiple roles depending on the situation. On an
 			empty prompt, they will send the presets. When there are search results, it will send
 			the corresponding search entry. But when there are no search results for an entered
-			text, they will set the corresponding preset to that text.
-			* The arrow keys navigates the log. The starting point is either the first search
-			result or the last returned entry on an empty prompt.
+			text, they will set the corresponding preset to that text.`n
+			BROWSING
+			* The arrow keys, [home], and [end] navigate the log. The starting point is either the first
+			search result or the last returned entry on an empty prompt.
 			* More than 12 presets can be set. Presets appear first in recliner.log and the search
 			and can serve to conceptually differentiate between autotext and log entries.
 			* To make entering consecutive entries easier, press enter on a blank prompt to send the
@@ -237,7 +238,7 @@ Loop {
 			matchV[matches] := value
 			matchK[matches] := key
 			len:=StrLen(value)
-			print.="`nf" . matches . " " . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
+			print.="`n F" . matches . "`t" . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
 			if (++matches>12)
 				break
 		}
@@ -251,12 +252,12 @@ Loop {
 			matchV[matches] := value
 			matchK[matches] := -key-1
 			len:=StrLen(value)
-			print.="`nf" . matches . " " . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
+			print.="`n f" . matches . "`t" . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
 			matches++
 		}
-		Tooltip, % matches>1? print : print . "`n   --- no matches ---`nf1..f12: set`nenter: append to presets & send",10,10
+		Tooltip, % matches>1? print : print . "`nF1-12`tset`nEnter`tappend to presets & send",10,10
 	} else
-		ToolTip,% ">`nEnter: " . (StrLen(nextDisP) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets,10,10
+		ToolTip,% ">`nEnter`t" . (StrLen(nextDisP) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets,10,10
 }
 Tooltip
 return
@@ -273,7 +274,7 @@ ProcDel:
 RebuildPresets:
 	presets:=""
 	Loop 12
-		presets.="`nf" . A_Index . " " . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
+		presets.="`n F" . A_Index . "`t" . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
 	return
 
 SendString(string) {
