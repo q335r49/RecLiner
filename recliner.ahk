@@ -3,25 +3,41 @@
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 StringCaseSense, Off
-shDel:=chr(127)
+ctrDel:=chr(127)
 ctrS:=chr(19)
 ctrH:=chr(8)
 ctrA:=chr(1)
 ctrU:=chr(21)
 ctrZ:=chr(26)
 ctrV:=chr(22)
-if !FileExist("recliner.ini")
+if !FileExist("reclinerv102.ini")
 	FileAppend,
 	( LTrim
-		[main]
 		;Hotkey=#s
 		;   Examples: ^t (control t) !f5 (alt f5) +f6 (shift f6) #s (windows s) See http://www.autohotkey.com/docs/Hotkeys.htm for further documenation (Default f4)
 		;MinLength=14
 		;   Strings shorter than this length will not be stored in the archive (default 14)
-	), recliner.ini
-IniRead, mainHotkey, recliner.ini, main, Hotkey, f4
-IniRead, min_chars, recliner.ini, main, MinLength, 14
-Hotkey,%mainHotkey%,uiLoop
+		;Font=Courier
+		;FontColor=FFF00
+		;BGColor=808080
+		;FontSize=10
+	), reclinerv102.ini
+FileRead, Settings, reclinerv102.ini
+Loop, Parse, Settings, `n, `r
+{	if (SubStr(A_LoopField,1,1)=";")
+		continue
+	StringGetPos, pos, A_LoopField, =
+	if (ErrorLevel || !pos)
+		continue
+	StringLeft, VarName, A_LoopField, pos
+	StringTrimLeft, VarVal, A_LoopField, pos+1
+	%VarName%=%VarVal%
+}
+Defaults := {Hotkey:"f4",MinLength:14,FontColor:"FFFFFF",BGColor:000000,FontSize:10,Font:"Lucida Console"}
+for key,value in Defaults
+	if !%key%
+		%key%=%value%
+Hotkey,%Hotkey%,uiLoop
 log:=Object()
 pre:=Object()
 logL:=0
@@ -43,27 +59,32 @@ browseKeys := Object("EndKey:Up",-1,"EndKey:Down",1,"EndKey:Delete",1,"EndKey:Le
 Menu, Tray, Nostandard
 Menu, Tray, add, &Edit log, MenuEditLog
 Menu, Tray, add, &Reload from log, MenuReload
+Menu, Tray, add, &Edit Settings, MenuEditSettings
 Menu, Tray, add
 Menu, Tray, add, S&ave, WriteLog
 Menu, Tray, add, E&xit, MenuExit
+Gui, Font, s%FontSize% c%FontColor%, %Font%
+Gui, Color, %BGColor%
+Gui, Add, Text,vConsole w300 r14, + + +
+Gui, +AlwaysOnTop -Caption
 Loop {
 	Input, k, V M, {enter}{esc}{tab}
-	if (StrLen(k)>min_chars) {
-		out=
-		Loop,Parse,k
-			if (A_LoopField = shDel) {
-				out := RTrim(out)
-				StringGetPos,pos,out,%A_Space%,R1
-				if !ErrorLevel
-					StringLeft,out,out,% pos+1
-			} else if (A_LoopField = ctrH)
-				StringTrimRight,out,out,1
-			else if (A_LoopField = ctrA)
-				out=
-			else
-				out.=A_LoopField
-		log[logL++]:=out
-	}
+	if (StrLen(k)<MinLength)
+		continue
+	out=
+	Loop,Parse,k
+		if (A_LoopField = ctrDel) {
+			out := RTrim(out)
+			StringGetPos,pos,out,%A_Space%,R1
+			if !ErrorLevel
+				StringLeft,out,out,% pos+1
+		} else if (A_LoopField = ctrH)
+			StringTrimRight,out,out,1
+		else if (A_LoopField = ctrA)
+			out=
+		else
+			out.=A_LoopField
+	log[logL++]:=out
 }
 
 WriteLog:
@@ -84,7 +105,7 @@ MenuEditLog:
 	Run, recliner.log
 	return
 MenuEditSettings:
-	Run, recliner.ini
+	Run, reclinerv102.ini
 	return
 MenuExit:
 	MsgBox, 3,, Save log?
@@ -95,9 +116,10 @@ MenuExit:
 	ExitApp
 
 uiLoop:
+Gui, show, ,RecGUI
 next := mark>=0? (mark+1>=preL? preL-1 : mark+1) : (-mark>logL? -logL-1 : mark-1)
 nextEnt := next>=0? pre[next] : log[-next-1]
-ToolTip,% ">`n^Help ^U:clear ^V:paste ^Save arrows:history`nEnter`t" . (StrLen(nextEnt) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets,10,10
+GuiControl,,Console,% ">`n^Help ^U:clear ^V:paste ^Save arrows:history`nEnter`t" . (StrLen(nextEnt) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets
 matches := 1
 Entry=
 NotFirstPress=0
@@ -134,7 +156,7 @@ Loop {
 		}
 		NotFirstPress=1
 		matches=1
-		Tooltip,% "> " . Entry .  hist,10,10
+		GuiControl,,Console,% "> " . Entry .  hist
 		continue
 	} else if (ErrorLevel="EndKey:Backspace") {
 		StringTrimRight, Entry, Entry, 1
@@ -192,7 +214,7 @@ Loop {
 	} else if (char=ctrU)
 		Entry := ""
 	else if (char=ctrH) {
-		Tooltip,
+		GuiControl,,Console,
 		( LTrim
 			RECLINER v1.2`n
 			Record and recall every line you type! On Enter, Esc, or Tab, the line just typed will
@@ -202,7 +224,7 @@ Loop {
 			* Log online chats!
 			* Build a library of frequently used quotes!`n
 			SEARCHING
-			* Press [%mainHotkey%] to bring up a search prompt.
+			* Press [%Hotkey%] to bring up a search prompt.
 			* The function keys [f1] .. [f12] serve multiple roles depending on the situation. On an
 			empty prompt, they will send the presets. When there are search results, it will send
 			the corresponding search entry. But when there are no search results for an entered
@@ -215,12 +237,12 @@ Loop {
 			* To make entering consecutive entries easier, press enter on a blank prompt to send the
 			next line.`n
 			TIPS
-			* Only lines longer than %min_chars% characters will be stored in the log (change in recliner.ini).
+			* Only lines longer than %MinLength% characters will be stored in the log (change in recliner.ini).
 			* In recliner.log, the line "### End Presets ###" separates presets from log entries.
 			* To send special characters (such as line breaks), append the entry with '###'. For example,
 			"###blah blah{!}{enter}blah" will send the two lines "blah blah!" and "blah". For a list of
 			special characters, see www.autohotkey.com/docs/commands/Send.htm
-		),10,10
+		)
 		continue
 	} else if (char=ctrS) { 
 		Gosub, WriteLog
@@ -238,7 +260,7 @@ Loop {
 			matchV[matches] := value
 			matchK[matches] := key
 			len:=StrLen(value)
-			print.="`n F" . matches . "`t" . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
+			print.="`n F" . matches . "`t" . key . " " . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
 			if (++matches>12)
 				break
 		}
@@ -252,14 +274,14 @@ Loop {
 			matchV[matches] := value
 			matchK[matches] := -key-1
 			len:=StrLen(value)
-			print.="`n f" . matches . "`t" . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
+			print.="`n f" . matches . "`t" . key . " " . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
 			matches++
 		}
-		Tooltip, % matches>1? print : print . "`nF1-12`tset`nEnter`tappend to presets & send",10,10
+		GuiControl,,Console, % matches>1? print : print . "`nF1-12`tset`nEnter`tappend to presets & send"
 	} else
-		ToolTip,% ">`nEnter`t" . (StrLen(nextDisP) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets,10,10
+		GuiControl,,Console,% ">`nEnter`t" . (StrLen(nextDisP) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets
 }
-Tooltip
+Gui, hide
 return
 
 ProcDel:
@@ -278,5 +300,7 @@ RebuildPresets:
 	return
 
 SendString(string) {
+	Gui, hide
+	WinWaitNotActive, RecGUI
 	Send % SubStr(string,1,3)="###"? SubStr(string,4) : "{Raw}" . string
 }
