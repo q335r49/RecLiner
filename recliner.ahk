@@ -65,8 +65,8 @@ Menu, Tray, add, S&ave, WriteLog
 Menu, Tray, add, E&xit, MenuExit
 Gui, Font, s%FontSize% c%FontColor%, %Font%
 Gui, Color, %BGColor%
-Gui, Add, Text,vConsole r16, ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Gui, +AlwaysOnTop -Caption
+Gui, Add, Text,vConsole r16, WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+Gui, +AlwaysOnTop -Caption +ToolWindow
 Loop {
 	Input, k, V M, {enter}{esc}{tab}
 	if (StrLen(k)<MinLength)
