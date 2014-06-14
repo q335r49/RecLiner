@@ -50,7 +50,6 @@ Loop, Read, recliner.log
 		logsection=1
 	else
 		pre[preL++]:=A_LoopReadLine
-MsgBox, % logL . " logs " . preL . " presets loaded from recliner.log"
 while preL < 12
 	pre[preL++]:=""
 Gosub, RebuildPresets
@@ -61,12 +60,13 @@ Menu, Tray, add, &Edit log, MenuEditLog
 Menu, Tray, add, &Reload from log, MenuReload
 Menu, Tray, add, &Edit Settings, MenuEditSettings
 Menu, Tray, add
-Menu, Tray, add, S&ave, WriteLog
+Menu, Tray, add, S&ave, MenuSave
 Menu, Tray, add, E&xit, MenuExit
 Gui, Font, s%FontSize% c%FontColor%, %Font%
 Gui, Color, %BGColor%
 Gui, Add, Text,vConsole r16, WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 Gui, +AlwaysOnTop -Caption +ToolWindow
+ConsoleMsg(logL . " logs " . preL . " presets loaded from recliner.log`n(Press any key to continue)",1)
 Loop {
 	Input, k, V M, {enter}{esc}{tab}
 	if (StrLen(k)<MinLength)
@@ -86,6 +86,20 @@ Loop {
 			out.=A_LoopField
 	log[logL++]:=out
 }
+return
+
+ConsoleMsg(string, hide=0) {
+	if hide
+	{	Gui, show
+		GuiControl,,Console,%string%
+		Input, char, L1
+		Gui, hide
+	} else {
+		GuiControl,,Console,%string%
+		Input, char, L1
+	}
+	return char
+}
 
 WriteLog:
 	File := FileOpen("recliner.log","w `r`n")
@@ -95,23 +109,26 @@ WriteLog:
 	for key,value in log
 		File.WriteLine(value)
 	File.close()
-	MsgBox, % logL . " logs " . preL . " presets written to recliner.log"
+	return
+MenuSave:
+	Gosub, WriteLog
+	ConsoleMsg(logL . " logs " . preL . " presets written to recliner.log`n(Press any key to continue)",1)
 	return
 MenuReload:
 	Reload
 	return
 MenuEditLog:
-	Gosub, WriteLog
+	Gosub, MenuSave
 	Run, recliner.log
 	return
 MenuEditSettings:
 	Run, reclinerv102.ini
 	return
 MenuExit:
-	MsgBox, 3,, Save log?
-	IfMsgBox, Yes
+	entry := ConsoleMsg("Save log? (y/n/esc)",1)
+	if (entry="y")
 		Gosub, WriteLog
-	IfMsgBox, Cancel
+	else if (entry!="n")
 		return
 	ExitApp
 
@@ -178,13 +195,13 @@ Loop {
 					SendString(pre[fn-1])
 		Gosub, ProcDel
 		if deletions>0
-			MsgBox, %deletions% entries removed
+			ConsoleMsg(deletions . " entries removed`n(Press any key to continue)")
 		break
 	} else if (ErrorLevel="EndKey:Enter") {
 		if (nmode=1) {
 			Gosub, ProcDel
 			if deletions>0
-				MsgBox, %deletions% entries removed
+				ConsoleMsg(deletions . " entries removed`n(Press any key to continue)")
 			else
 				SendString(Entry)
 		} else if (matches>1) {
@@ -247,6 +264,7 @@ Loop {
 	} else if (char=ctrS) { 
 		Gosub, WriteLog
 		GoSub, ProcDel
+		ConsoleMsg(logL . " logs " . preL . " presets written to recliner`n(Press any key to continue).log")
 		break
 	} else if (char=ctrV)
 		Entry=%clipboard%
