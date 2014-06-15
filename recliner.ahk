@@ -60,11 +60,12 @@ Menu, Tray, add, &Edit log, MenuEditLog
 Menu, Tray, add, &Reload from log, MenuReload
 Menu, Tray, add, &Edit Settings, MenuEditSettings
 Menu, Tray, add
+Menu, Tray, add, P&ause, MenuPause
 Menu, Tray, add, S&ave, MenuSave
 Menu, Tray, add, E&xit, MenuExit
 Gui, Font, s%FontSize% c%FontColor%, %Font%
 Gui, Color, %BGColor%
-Gui, Add, Text,vConsole r16, WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+Gui, Add, Text,vConsole r16, WW`tWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 Gui, +AlwaysOnTop -Caption +ToolWindow
 ConsoleMsg(logL . " logs " . preL . " presets loaded from recliner.log`n(Press any key to continue)",1)
 Loop {
@@ -114,6 +115,9 @@ MenuSave:
 	Gosub, WriteLog
 	ConsoleMsg(logL . " logs " . preL . " presets written to recliner.log`n(Press any key to continue)",1)
 	return
+MenuPause:
+	Pause
+	return
 MenuReload:
 	Reload
 	return
@@ -136,7 +140,7 @@ uiLoop:
 Gui, show, ,RecGUI
 next := mark>=0? (mark+1>=preL? preL-1 : mark+1) : (-mark>logL? -logL-1 : mark-1)
 nextEnt := next>=0? pre[next] : log[-next-1]
-GuiControl,,Console,% ">`n^Help ^U:clear ^V:paste ^Save arrows:history`nEnter`t" . (StrLen(nextEnt) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets
+GuiControl,,Console,% ">`n^U:clear ^V:paste ^Save arrows:history`nEnter`t" . (StrLen(nextEnt) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets
 matches := 1
 Entry=
 NotFirstPress=0
@@ -161,7 +165,7 @@ Loop {
 			start:=mark//12*12-1
 			hist=
 			Loop 12
-				hist.="`n" . (A_Index+start=mark? "{ " : " ") . (deleteK.HasKey(A_Index+start)? "X " : " ") . "F" . A_Index . "`t" . (A_Index+start+1) . " " . (StrLen(pre[A_Index+start])>50? (SubStr(pre[A_Index+start],1,50) . " ...") : pre[A_Index+start]) 
+				hist.="`n" . (A_Index+start=mark? ">" : " ") . (deleteK.HasKey(A_Index+start)? "X " : " ") . "F" . A_Index . "`t" . (A_Index+start+1) . " " . (StrLen(pre[A_Index+start])>50? (SubStr(pre[A_Index+start],1,50) . " ...") : pre[A_Index+start]) 
 		} else {
 			mark-=browseKeys[ErrorLevel]*(NotFirstPress || ErrorLevel="EndKey:Home" || ErrorLevel="EndKey:End")
 			mark:=-mark-1>logL? -logL-1 : mark>-1? -1 : mark 
@@ -169,11 +173,11 @@ Loop {
 			start:=(-mark-1)//12*12-1
 			hist=
 			Loop 12
-				hist.="`n" . (A_Index+start=-mark-1? "{ " : " ") . (deleteK.HasKey(-A_Index-start-1)? "X " : " ") . "f" . A_Index . "`t" . (A_Index+start+1) . " " . (StrLen(log[A_Index+start])>50? (SubStr(log[A_Index+start],1,50) . " ...") : log[A_Index+start]) 
+				hist.="`n" . (A_Index+start=-mark-1? ">" : " ") . (deleteK.HasKey(-A_Index-start-1)? "X " : " ") . "f" . A_Index . "`t" . (A_Index+start+1) . " " . (StrLen(log[A_Index+start])>50? (SubStr(log[A_Index+start],1,50) . " ...") : log[A_Index+start]) 
 		}
 		NotFirstPress=1
 		matches=1
-		GuiControl,,Console,% "> " . Entry .  hist
+		GuiControl,,Console,% "> " . (StrLen(Entry)>50? "..." . SubStr(Entry,-50) : Entry) .  hist
 		continue
 	} else if (ErrorLevel="EndKey:Backspace") {
 		StringTrimRight, Entry, Entry, 1
@@ -230,38 +234,7 @@ Loop {
 		NotFirstPress=0
 	} else if (char=ctrU)
 		Entry := ""
-	else if (char=ctrH) {
-		GuiControl,,Console,
-		( LTrim
-			RECLINER v1.2`n
-			Record and recall every line you type! On Enter, Esc, or Tab, the line just typed will
-			be stored in a searchable history.
-			* Remember addresses, serial numbers, and usernames!
-			* Have a unified history for command line interfaces!
-			* Log online chats!
-			* Build a library of frequently used quotes!`n
-			SEARCHING
-			* Press [%Hotkey%] to bring up a search prompt.
-			* The function keys [f1] .. [f12] serve multiple roles depending on the situation. On an
-			empty prompt, they will send the presets. When there are search results, it will send
-			the corresponding search entry. But when there are no search results for an entered
-			text, they will set the corresponding preset to that text.`n
-			BROWSING
-			* The arrow keys, [home], and [end] navigate the log. The starting point is either the first
-			search result or the last returned entry on an empty prompt.
-			* More than 12 presets can be set. Presets appear first in recliner.log and the search
-			and can serve to conceptually differentiate between autotext and log entries.
-			* To make entering consecutive entries easier, press enter on a blank prompt to send the
-			next line.`n
-			TIPS
-			* Only lines longer than %MinLength% characters will be stored in the log (change in recliner.ini).
-			* In recliner.log, the line "### End Presets ###" separates presets from log entries.
-			* To send special characters (such as line breaks), append the entry with '###'. For example,
-			"###blah blah{!}{enter}blah" will send the two lines "blah blah!" and "blah". For a list of
-			special characters, see www.autohotkey.com/docs/commands/Send.htm
-		)
-		continue
-	} else if (char=ctrS) { 
+	else if (char=ctrS) { 
 		Gosub, WriteLog
 		GoSub, ProcDel
 		ConsoleMsg(logL . " logs " . preL . " presets written to recliner`n(Press any key to continue).log")
@@ -270,7 +243,8 @@ Loop {
 		Entry=%clipboard%
 	matches:=1
 	if Entry
-	{	print=> %Entry%
+	{	
+		print := "> " . (StrLen(Entry)>50? "..." . SubStr(Entry,-50) : Entry)
 		for key,value in pre {
 			StringGetPos,pos,value,%Entry%
 			if (pos=-1)
@@ -297,7 +271,7 @@ Loop {
 		}
 		GuiControl,,Console, % matches>1? print : print . "`nF1-12`tset`nEnter`tappend to presets & send"
 	} else
-		GuiControl,,Console,% ">`nEnter`t" . (StrLen(nextDisP) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets
+		GuiControl,,Console, % ">`nEnter`t" . (StrLen(nextDisP) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets
 }
 Gui, hide
 return
