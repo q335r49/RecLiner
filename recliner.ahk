@@ -66,8 +66,9 @@ Menu, Tray, add, E&xit, MenuExit
 Gui, Font, s%FontSize% c%FontColor%, %Font%
 Gui, Color, %BGColor%
 Gui, Add, Text,vConsole r16, WW`tWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
-Gui, +AlwaysOnTop -Caption +ToolWindow
+Gui, +AlwaysOnTop +ToolWindow
 ConsoleMsg(logL . " logs " . preL . " presets loaded from recliner.log`n(Press any key to continue)",1)
+Gui, -Caption
 Loop {
 	Input, k, V M, {enter}{esc}{tab}
 	if (StrLen(k)<MinLength)
