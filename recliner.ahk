@@ -235,6 +235,7 @@ Loop {
 		}
 		break
 	} else if (ErrorLevel!="Max") {
+		Sleep 99
 		break
 	} else if (char>ctrZ) {
 		Entry.=char
