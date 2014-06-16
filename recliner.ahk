@@ -63,6 +63,8 @@ Menu, Tray, add
 Menu, Tray, add, P&ause, MenuPause
 Menu, Tray, add, S&ave, MenuSave
 Menu, Tray, add, E&xit, MenuExit
+Gui, recLiner:New,,recLiner
+Gui recLiner:Default
 Gui, Font, s%FontSize% c%FontColor%, %Font%
 Gui, Color, %BGColor%
 Gui, Add, Text,vConsole r16, WW`tWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
@@ -94,9 +96,11 @@ ConsoleMsg(string, hide=0) {
 	if hide
 	{	Gui, show
 		GuiControl,,Console,%string%
+		Winwaitactive, recLiner
 		Input, char, L1
 		Gui, hide
 	} else {
+		Winwaitactive, recLiner
 		GuiControl,,Console,%string%
 		Input, char, L1
 	}
@@ -138,7 +142,8 @@ MenuExit:
 	ExitApp
 
 uiLoop:
-Gui, show, ,RecGUI
+Gui recLiner:Default
+Gui, show
 next := mark>=0? (mark+1>=preL? preL-1 : mark+1) : (-mark>logL? -logL-1 : mark-1)
 nextEnt := next>=0? pre[next] : log[-next-1]
 GuiControl,,Console,% ">`n^U:clear ^V:paste ^Save arrows:history`nEnter`t" . (StrLen(nextEnt) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets
@@ -149,6 +154,7 @@ matchV := Object()
 matchK := Object()
 deleteK := {}
 nmode=0
+Winwaitactive, recLiner
 Loop {
 	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{left}{right}{delete}{home}{end}
 	if browseKeys.HasKey(ErrorLevel) {
