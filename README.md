@@ -4,7 +4,7 @@ Record and recall lines that you have typed! On <kbd>enter</kbd>, <kbd>esc</kbd>
 * Have a unified history for command line interfaces!
 * Log online chats!
 * Build a library of often used quotes!
-* Check out the **[Youtube video](https://www.youtube.com/watch?v=iOPYzTMHf_0)**!
+* Check out the **[Youtube video](http://youtu.be/PIzkEBu4754)**!
 
 ####Startup
 Install [Autohotkey](http://www.autohotkey.com/) and run [recliner.ahk](https://raw.githubusercontent.com/q335r49/RecLiner/master/recliner.ahk).
