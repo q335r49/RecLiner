@@ -63,12 +63,11 @@ Menu, Tray, add
 Menu, Tray, add, P&ause, MenuPause
 Menu, Tray, add, S&ave, MenuSave
 Menu, Tray, add, E&xit, MenuExit
-Gui, recLiner:New,,recLiner
-Gui recLiner:Default
 Gui, Font, s%FontSize% c%FontColor%, %Font%
 Gui, Color, %BGColor%
 Gui, Add, Text,vConsole r16, WW`tWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 Gui, +AlwaysOnTop +ToolWindow
+Gui, show,, recLiner
 ConsoleMsg(logL . " logs " . preL . " presets loaded from recliner.log`n(Press any key to continue)",1)
 Gui, -Caption
 Loop {
@@ -94,13 +93,12 @@ return
 
 ConsoleMsg(string, hide=0) {
 	if hide
-	{	Gui, show
-		GuiControl,,Console,%string%
+	{	GuiControl,,Console,%string%
+		Gui, show
 		Winwaitactive, recLiner
 		Input, char, L1
 		Gui, hide
 	} else {
-		Winwaitactive, recLiner
 		GuiControl,,Console,%string%
 		Input, char, L1
 	}
@@ -142,7 +140,6 @@ MenuExit:
 	ExitApp
 
 uiLoop:
-Gui recLiner:Default
 Gui, show
 next := mark>=0? (mark+1>=preL? preL-1 : mark+1) : (-mark>logL? -logL-1 : mark-1)
 nextEnt := next>=0? pre[next] : log[-next-1]
