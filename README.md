@@ -7,7 +7,7 @@ Record and recall lines that you have typed! On <kbd>enter</kbd>, <kbd>esc</kbd>
 * Check out the **[Youtube video](http://youtu.be/PIzkEBu4754)**!
 
 ####Startup
-Install [Autohotkey](http://www.autohotkey.com/) and run [recliner.ahk](https://raw.githubusercontent.com/q335r49/RecLiner/master/recliner.ahk).
+Install [Autohotkey 1.1.15](http://ahkscript.org/download/) and run [recliner.ahk](https://raw.githubusercontent.com/q335r49/RecLiner/master/recliner.ahk).
 
 ####Searching
 * Press the hotkey (default: <kbd>f4</kbd>) to bring up a search prompt.
