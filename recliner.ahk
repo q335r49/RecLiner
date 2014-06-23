@@ -274,7 +274,7 @@ Loop {
 			print.="`n f" . matches . "`t" . key . " " . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
 			matches++
 		}
-		GuiControl,,Console, % matches>1? print : print . "`nF1-12`tset`nEnter`tappend to presets & send"
+		GuiControl,,Console, % matches>1? print : print . "`nF1-12`tset`nEnter`tappend to presets && send"
 	} else
 		GuiControl,,Console, % ">`nEnter`t" . (StrLen(nextDisP) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets
 }
