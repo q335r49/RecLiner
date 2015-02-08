@@ -1,3 +1,4 @@
+; cool green tint
 ; search by number
 ; Don't need ini AND log
 ; console position in .ini
@@ -193,15 +194,13 @@ Loop {
 		nmode=0
 	} else if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 		fN:=SubStr(ErrorLevel,9)
-		if fN<=12
-			if (nmode=1) {
-				SendString(log[fN+start])
-			} else if (matches>fN) {
-				SendString(matchV[fN])
-				mark:=matchK[fN]
-			} else if (Entry="") {
-				SendString(log[fN-1])
-			}
+		if (nmode=1) {
+			SendString(log[fN+start])
+		} else if (matches>fN) {
+			SendString(matchV[fN])
+			mark:=matchK[fN]
+		} else if (Entry="")
+			SendString(log[fN-1])
 		Gosub, ProcDel
 		if deletions>0
 			ConsoleMsg(deletions . " entries removed`n(Press any key to continue)")
@@ -242,7 +241,7 @@ Loop {
 	{	
 		EntryL:=StrLen(Entry)
 		print := "> " . (EntryL>70? "..." . SubStr(Entry,-70) : Entry)
-		key := 0
+		key := -1
 		while (key<logL && matches<=12) {
 			key++
 			value := log[key]
@@ -250,7 +249,7 @@ Loop {
 			if (pos=-1)
 				continue
 			matchV[matches] := value
-			matchK[matches] := -key-1
+			matchK[matches] := key
 			len:=StrLen(value)
 			print.="`n F" . matches . "`t" . key . " " . (pos<=60 || len<100? Substr(value,1,pos) . "[[" . Substr(value, pos+1, EntryL) . "]]" . SubStr(value,pos+1+EntryL) : "..." . SubStr(value,pos-50,51) . "[[" . SubStr(value,pos+1,EntryL) . "]]" . SubStr(value,pos+EntryL+1))
 			matches++
