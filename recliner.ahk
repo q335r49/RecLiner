@@ -1,5 +1,3 @@
-; inconsistency in how browse v search displays index
-
 #NoEnv
 #SingleInstance force
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
@@ -178,7 +176,7 @@ Loop {
 		start:=mark//12*12-1
 		hist=
 		Loop 12
-			hist.="`n" . (A_Index+start=mark? ">" : " ") . (deleteK.HasKey(A_Index+start)? "X " : " ") . "F" . A_Index . "`t" . (A_Index+start+1) . " " . log[A_Index+start] 
+			hist.="`n" . (A_Index+start=mark? ">" : " ") . (deleteK.HasKey(A_Index+start)? "X " : " ") . "F" . A_Index . "`t" . (A_Index+start) . " " . log[A_Index+start] 
 		NotFirstPress=1
 		matches=1
 		GuiControl,,Console,% "> " . (StrLen(Entry)>50? "..." . SubStr(Entry,-50) : Entry) .  hist
