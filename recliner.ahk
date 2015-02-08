@@ -1,4 +1,3 @@
-; Why distinguish between presets and logs at all?!
 ; search by number
 ; Don't need ini AND log
 ; console position in .ini
@@ -34,8 +33,7 @@ if !FileExist("recliner.ini")
 		;BGColor=808080
 		;FontSize=10
 	), recliner.ini
-
-FileRead, Settings, reclinerv102.ini
+FileRead, Settings, recliner.ini
 Loop, Parse, Settings, `n, `r
 {	if (SubStr(A_LoopField,1,1)=";")
 		continue
@@ -55,19 +53,9 @@ for key,value in Defaults
 Hotkey,%Hotkey%,uiLoop
 
 log:=Object()
-pre:=Object()
 logL:=0
-preL:=0
-logsection=
 Loop, Read, recliner.log
-	if logsection
-		log[logL++]:=A_LoopReadLine
-	else if A_LoopReadLine = ### End Presets ###
-		logsection=1
-	else
-		pre[preL++]:=A_LoopReadLine
-while preL < 12
-	pre[preL++]:=""
+	log[logL++]:=A_LoopReadLine
 Gosub, RebuildPresets
 
 mark:=0
@@ -137,16 +125,13 @@ ConsoleMsg(string, hide=0) {
 
 WriteLog:
 	File := FileOpen("recliner.log","w `r`n")
-	for key,value in pre
-		File.WriteLine(value)
-	File.WriteLine("### End Presets ###")
 	for key,value in log
 		File.WriteLine(value)
 	File.close()
 	return
 MenuSave:
 	Gosub, WriteLog
-	ConsoleMsg(logL . " logs " . preL . " presets written to recliner.log`n(Press any key to continue)",1)
+	ConsoleMsg(logL . " logs written to recliner.log`n(Press any key to continue)",1)
 	return
 MenuPause:
 	Pause
@@ -171,8 +156,8 @@ MenuExit:
 
 uiLoop:
 Gui, show
-next := mark>=0? (mark+1>=preL? preL-1 : mark+1) : (-mark>logL? -logL-1 : mark-1)
-nextEnt := next>=0? pre[next] : log[-next-1]
+next := mark+1>=logL? logL-1 : mark+1
+nextEnt := log[next]
 GuiControl,,Console,% ">`t^U:clear ^V:paste ^Save arrows:history`nEnter`t" . (StrLen(nextEnt) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets
 matches := 1
 Entry=
@@ -192,23 +177,13 @@ Loop {
 				deleteK.Remove(mark,"")
 			else
 				deleteK[mark]:=1
-		if (mark>=0) {
-			mark+=browseKeys[ErrorLevel]*(NotFirstPress || ErrorLevel="EndKey:Home" || ErrorLevel="EndKey:End")
-			mark:=mark>=preL? preL-1 : mark<0? 0 : mark
-			Entry:=pre[mark]
-			start:=mark//12*12-1
-			hist=
-			Loop 12
-				hist.="`n" . (A_Index+start=mark? ">" : " ") . (deleteK.HasKey(A_Index+start)? "X " : " ") . "F" . A_Index . "`t" . (A_Index+start+1) . " " . pre[A_Index+start] 
-		} else {
-			mark-=browseKeys[ErrorLevel]*(NotFirstPress || ErrorLevel="EndKey:Home" || ErrorLevel="EndKey:End")
-			mark:=-mark-1>logL? -logL-1 : mark>-1? -1 : mark 
-			Entry:=log[-mark-1]
-			start:=(-mark-1)//12*12-1
-			hist=
-			Loop 12
-				hist.="`n" . (A_Index+start=-mark-1? ">" : " ") . (deleteK.HasKey(-A_Index-start-1)? "X " : " ") . "f" . A_Index . "`t" . (A_Index+start+1) . " " . log[A_Index+start] 
-		}
+		mark+=browseKeys[ErrorLevel]*(NotFirstPress || ErrorLevel="EndKey:Home" || ErrorLevel="EndKey:End")
+		mark:=mark>=logL? logL-1 : mark<0? 0 : mark
+		Entry:=log[mark]
+		start:=mark//12*12-1
+		hist=
+		Loop 12
+			hist.="`n" . (A_Index+start=mark? ">" : " ") . (deleteK.HasKey(A_Index+start)? "X " : " ") . "F" . A_Index . "`t" . (A_Index+start+1) . " " . log[A_Index+start] 
 		NotFirstPress=1
 		matches=1
 		GuiControl,,Console,% "> " . (StrLen(Entry)>50? "..." . SubStr(Entry,-50) : Entry) .  hist
@@ -220,17 +195,13 @@ Loop {
 		fN:=SubStr(ErrorLevel,9)
 		if fN<=12
 			if (nmode=1) {
-				SendString(mark>=0? pre[fN+start] : log[fN+start])
+				SendString(log[fN+start])
 			} else if (matches>fN) {
 				SendString(matchV[fN])
 				mark:=matchK[fN]
-			} else if (matches<=1)
-				if (Entry!="") {
-					pre[fN-1]:=Entry
-					Gosub, RebuildPresets
-					GoSub, uiLoop
-				} else
-					SendString(pre[fn-1])
+			} else if (Entry="") {
+				SendString(log[fN-1])
+			}
 		Gosub, ProcDel
 		if deletions>0
 			ConsoleMsg(deletions . " entries removed`n(Press any key to continue)")
@@ -248,18 +219,8 @@ Loop {
 		} else if (Entry="") {
 			mark := next
 			SendString(nextEnt)
-		} else {
-			count=0
-			while (pre[count]!="" && count<12)
-				count++
-			if count=12
-				pre[preL++]:=Entry
-			else {
-				pre[count]:=Entry
-				Gosub, RebuildPresets
-			}
+		} else
 			SendString(Entry)
-		}
 		break
 	} else if (ErrorLevel!="Max") {
 		Sleep 99
@@ -272,7 +233,7 @@ Loop {
 	else if (char=ctrS) { 
 		Gosub, WriteLog
 		GoSub, ProcDel
-		ConsoleMsg(logL . " logs " . preL . " presets written to recliner`n(Press any key to continue).log")
+		ConsoleMsg(logL . " logs written to recliner`n(Press any key to continue).log")
 		break
 	} else if (char=ctrV)
 		Entry=%clipboard%
@@ -281,20 +242,9 @@ Loop {
 	{	
 		EntryL:=StrLen(Entry)
 		print := "> " . (EntryL>70? "..." . SubStr(Entry,-70) : Entry)
-		for key,value in pre {
-			StringGetPos,pos,value,%Entry%
-			if (pos=-1)
-				continue
-			matchV[matches] := value
-			matchK[matches] := key
-			len:=StrLen(value)
-			print.="`n F" . matches . "`t" . key . " " . (pos<=60 || len<100? Substr(value,1,pos) . "<" . Substr(value, pos+1, EntryL) . ">" . SubStr(value,pos+1+EntryL) : "..." . SubStr(value,pos-50,51) . "<" . SubStr(value,pos+1,EntryL) . ">" . SubStr(value,pos+EntryL+1))
-			if (++matches>12)
-				break
-		}
-		key := logL
-		while (key>0 && matches<=12) {
-			key--
+		key := 0
+		while (key<logL && matches<=12) {
+			key++
 			value := log[key]
 			StringGetPos,pos,value,%Entry%
 			if (pos=-1)
@@ -302,10 +252,10 @@ Loop {
 			matchV[matches] := value
 			matchK[matches] := -key-1
 			len:=StrLen(value)
-			print.="`n F" . matches . "`t" . key . " " . (pos<=60 || len<100? Substr(value,1,pos) . "<" . Substr(value, pos+1, EntryL) . ">" . SubStr(value,pos+1+EntryL) : "..." . SubStr(value,pos-50,51) . "<" . SubStr(value,pos+1,EntryL) . ">" . SubStr(value,pos+EntryL+1))
+			print.="`n F" . matches . "`t" . key . " " . (pos<=60 || len<100? Substr(value,1,pos) . "[[" . Substr(value, pos+1, EntryL) . "]]" . SubStr(value,pos+1+EntryL) : "..." . SubStr(value,pos-50,51) . "[[" . SubStr(value,pos+1,EntryL) . "]]" . SubStr(value,pos+EntryL+1))
 			matches++
 		}
-		GuiControl,,Console, % matches>1? print : print . "`nF1-12`tset`nEnter`tappend to presets && send"
+		GuiControl,,Console, % print
 	} else
 		GuiControl,,Console, % ">`nEnter`t" . (StrLen(nextDisP) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets
 }
@@ -325,7 +275,7 @@ ProcDel:
 RebuildPresets:
 	presets:=""
 	Loop 12
-		presets.="`n F" . A_Index . "`t" . pre[A_Index-1]
+		presets.="`n F" . A_Index . "`t" . log[A_Index-1]
 	return
 
 SendString(string) {
