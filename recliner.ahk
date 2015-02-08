@@ -1,3 +1,5 @@
+;autosave
+
 #NoEnv
 #SingleInstance force
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
@@ -52,7 +54,22 @@ Menu, Tray, add, E&xit, MenuExit
 
 Gui, Font, s%FontSize% c%FontColor%, %Font%
 Gui, Color, %BGColor%
-Gui, Add, Text,vConsole r14 -Wrap,% "recLiner 1.3 _________ Hotkey: " . Hotkey . " ______________________________________________________________`n- " . logL . " entries loaded from recliner.log`n`nTips:`n- Drag and resize this window to change location of console`n- Change font and color in recliner.ini`n`n`n`n`n`n`n`nPress any key to continue"
+Gui, Add, Text,vConsole r14 -Wrap,
+	( LTrim
+		RECLINER 1.3, updated 2/8/2015
+		hotkey: %Hotkey%		recliner.log: %logL% entries
+		
+		Recliner logs all typed text in recliner.log
+		- Search by entering text
+		- Retrieve index by typing in a number.
+		- Negative numbers retreive most recently typed entries.
+		- Place most often used entries in the first 12 positions for quick access
+		- Drag and resize this window to change location of console
+		- Change font, color, and hotkey in recliner.ini
+
+
+		(Press any key to continue)
+	)
 Gui, +AlwaysOnTop +ToolWindow +Resize
 Gui, show, % "X" . WinPos.X . " Y" . WinPos.Y . " W" . WinPos.W, recLiner
 Winwaitactive, recLiner
@@ -235,10 +252,9 @@ Loop {
 		print := "> " . (EntryL>70? "..." . SubStr(Entry,-70) : Entry)
 		if Entry is integer
 		{
-			if (Entry>=0 && Entry < logL) {
-				print.="`n F" . matches . "`t" . (matchK[matches] := Entry) . " " . (matchV[matches] := log[Entry])
-				matches++
-			}
+			ix := Entry<0? Entry>-logL? logL+Entry : 0 : Entry>=logL? logL-1 : Entry
+			print.="`n F" . matches . "`t" . (matchK[matches] := ix) . " " . (matchV[matches] := log[ix])
+			matches++
 		}
 		key := -1
 		while (key<logL && matches<=12) {
