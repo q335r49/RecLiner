@@ -1,10 +1,10 @@
-; cool green tint
 ; search by number
 ; Don't need ini AND log
 ; console position in .ini
 ; want some way to "scroll presets"
 ; better filtering for 'english'?
 ; need easier way to browse history
+; need to document how to comment in ini file
 
 #NoEnv
 #SingleInstance force
@@ -46,7 +46,7 @@ Loop, Parse, Settings, `n, `r
 	%VarName%=%VarVal%
 }
 
-Defaults := {Hotkey:"f4",MinLength:2,FontColor:"DDEEDD",BGColor:221122,FontSize:12,Font:"Arial Narrow"}
+Defaults := {Hotkey:"f4",MinLength:2,FontColor:"BBCCDD",BGColor:"333333",FontSize:12,Font:"Arial Narrow"}
 for key,value in Defaults
 	if !%key%
 		%key%=%value%
@@ -241,6 +241,13 @@ Loop {
 	{	
 		EntryL:=StrLen(Entry)
 		print := "> " . (EntryL>70? "..." . SubStr(Entry,-70) : Entry)
+		if Entry is integer
+		{
+			if (Entry>=0 && Entry < logL) {
+				print.="`n F" . matches . "`t" . (matchK[matches] := Entry) . " " . (matchV[matches] := log[Entry])
+				matches++
+			}
+		}
 		key := -1
 		while (key<logL && matches<=12) {
 			key++
