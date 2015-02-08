@@ -1,8 +1,10 @@
-; console position .ini
-; need save dialogue for reload??
+; Why distinguish between presets and logs at all?!
+; search by number
+; Don't need ini AND log
+; console position in .ini
 ; want some way to "scroll presets"
-; better filtering for 'english'
-; search by number or label
+; better filtering for 'english'?
+; need easier way to browse history
 
 #NoEnv
 #SingleInstance force
@@ -31,7 +33,7 @@ if !FileExist("recliner.ini")
 		;FontColor=FFF00
 		;BGColor=808080
 		;FontSize=10
-	), reclinerv102.ini
+	), recliner.ini
 
 FileRead, Settings, reclinerv102.ini
 Loop, Parse, Settings, `n, `r
@@ -82,13 +84,11 @@ Menu, Tray, add, E&xit, MenuExit
 
 Gui, Font, s%FontSize% c%FontColor%, %Font%
 Gui, Color, %BGColor%
-Gui, Add, Text,vConsole r14 -Wrap, WW`tWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
-
+Gui, Add, Text,vConsole r14 -Wrap,% "recLiner 1.3 _________ Hotkey: " . Hotkey . " ______________________________________________________________`n- " . logL . " logs " . preL . " presets loaded from recliner.log`n`nTips:`n- Drag and resize this window to change location of console`n- Change font and color in recliner.ini`n`n`n`n`n`n`n`nPress any key to continue"
 Gui, +AlwaysOnTop +ToolWindow +Resize
 Gui, show,, recLiner
-VarSetCapacity( rect, 16, 0 )
-GuiControl,,Console,% "`trecLiner 1.3`tHotkey: " . Hotkey . "`n... " . logL . " logs " . preL . " presets loaded from recliner.log`n`nTips:`n- Drag and resize this window to change location of console`n- Change font and color in recliner.ini`n`n`n`n`n`n`n`n(Press any key to continue)"
 Winwaitactive, recLiner
+VarSetCapacity( rect, 16, 0 )
 MyGuiHWND := WinExist()
 DllCall("GetClientRect", uint, MyGuiHWND, uint, &rect )
 ClientH := NumGet( rect, 12, "int" )
@@ -279,7 +279,8 @@ Loop {
 	matches:=1
 	if Entry
 	{	
-		print := "> " . (StrLen(Entry)>50? "..." . SubStr(Entry,-50) : Entry)
+		EntryL:=StrLen(Entry)
+		print := "> " . (EntryL>70? "..." . SubStr(Entry,-70) : Entry)
 		for key,value in pre {
 			StringGetPos,pos,value,%Entry%
 			if (pos=-1)
@@ -287,7 +288,7 @@ Loop {
 			matchV[matches] := value
 			matchK[matches] := key
 			len:=StrLen(value)
-			print.="`n F" . matches . "`t" . key . " " . (pos<=50? value : len<100? value : "..." . SubStr(value,pos-50))
+			print.="`n F" . matches . "`t" . key . " " . (pos<=60 || len<100? Substr(value,1,pos) . "<" . Substr(value, pos+1, EntryL) . ">" . SubStr(value,pos+1+EntryL) : "..." . SubStr(value,pos-50,51) . "<" . SubStr(value,pos+1,EntryL) . ">" . SubStr(value,pos+EntryL+1))
 			if (++matches>12)
 				break
 		}
@@ -301,7 +302,7 @@ Loop {
 			matchV[matches] := value
 			matchK[matches] := -key-1
 			len:=StrLen(value)
-			print.="`n F" . matches . "`t" . key . " " . (pos<=50? value : len<100? value : "..." . SubStr(value,pos-50))
+			print.="`n F" . matches . "`t" . key . " " . (pos<=60 || len<100? Substr(value,1,pos) . "<" . Substr(value, pos+1, EntryL) . ">" . SubStr(value,pos+1+EntryL) : "..." . SubStr(value,pos-50,51) . "<" . SubStr(value,pos+1,EntryL) . ">" . SubStr(value,pos+EntryL+1))
 			matches++
 		}
 		GuiControl,,Console, % matches>1? print : print . "`nF1-12`tset`nEnter`tappend to presets && send"
@@ -320,6 +321,7 @@ ProcDel:
 		else
 			log.Remove(-key-1)
 	}
+
 RebuildPresets:
 	presets:=""
 	Loop 12
