@@ -1,10 +1,7 @@
-; truncation is way too short
+; gui width setting / allow resizing
+; console position .ini
+; need save dialogue for reload??
 ; want some way to "scroll presets"
-; font and color are terrible
-; rounded corners
-; help message about dragging the starting screen
-; should make console resizable as well
-; should save console position
 ; better filtering for 'english'
 ; search by number or label
 
@@ -86,11 +83,20 @@ Menu, Tray, add, E&xit, MenuExit
 
 Gui, Font, s%FontSize% c%FontColor%, %Font%
 Gui, Color, %BGColor%
-Gui, Add, Text,vConsole r16, WW`tWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
-Gui, +AlwaysOnTop +ToolWindow
+Gui, Add, Text,vConsole r14 -Wrap, WW`tWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+
+Gui, +AlwaysOnTop +ToolWindow +Resize
 Gui, show,, recLiner
-ConsoleMsg(logL . " logs " . preL . " presets loaded from recliner.log`n(Press any key to continue)`nTip: Drag this window to change location of console display",1)
-Gui, -Caption
+GuiControl,,Console,logL . " logs " . preL . " presets loaded from recliner.log`n(Press any key to continue)`nTip: Drag this window to change location of console display"
+Winwaitactive, recLiner
+Input, char, L1
+Gui, -Caption -Resize
+VarSetCapacity( rect, 16, 0 )
+DllCall("GetClientRect", uint, MyGuiHWND := WinExist(), uint, &rect )
+ClientW := NumGet( rect, 8, "int" )
+ClientH := NumGet( rect, 12, "int" )
+Winset, Region, 0-0 w%ClientW% h%ClientH% R30-30, recLiner
+Gui, hide
 
 Loop {
 	Input, k, V M, {enter}{esc}{tab}
@@ -191,7 +197,7 @@ Loop {
 			start:=mark//12*12-1
 			hist=
 			Loop 12
-				hist.="`n" . (A_Index+start=mark? ">" : " ") . (deleteK.HasKey(A_Index+start)? "X " : " ") . "F" . A_Index . "`t" . (A_Index+start+1) . " " . (StrLen(pre[A_Index+start])>50? (SubStr(pre[A_Index+start],1,50) . " ...") : pre[A_Index+start]) 
+				hist.="`n" . (A_Index+start=mark? ">" : " ") . (deleteK.HasKey(A_Index+start)? "X " : " ") . "F" . A_Index . "`t" . (A_Index+start+1) . " " . pre[A_Index+start] 
 		} else {
 			mark-=browseKeys[ErrorLevel]*(NotFirstPress || ErrorLevel="EndKey:Home" || ErrorLevel="EndKey:End")
 			mark:=-mark-1>logL? -logL-1 : mark>-1? -1 : mark 
@@ -199,7 +205,7 @@ Loop {
 			start:=(-mark-1)//12*12-1
 			hist=
 			Loop 12
-				hist.="`n" . (A_Index+start=-mark-1? ">" : " ") . (deleteK.HasKey(-A_Index-start-1)? "X " : " ") . "f" . A_Index . "`t" . (A_Index+start+1) . " " . (StrLen(log[A_Index+start])>50? (SubStr(log[A_Index+start],1,50) . " ...") : log[A_Index+start]) 
+				hist.="`n" . (A_Index+start=-mark-1? ">" : " ") . (deleteK.HasKey(-A_Index-start-1)? "X " : " ") . "f" . A_Index . "`t" . (A_Index+start+1) . " " . log[A_Index+start] 
 		}
 		NotFirstPress=1
 		matches=1
@@ -279,7 +285,7 @@ Loop {
 			matchV[matches] := value
 			matchK[matches] := key
 			len:=StrLen(value)
-			print.="`n F" . matches . "`t" . key . " " . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
+			print.="`n F" . matches . "`t" . key . " " . (pos<=50? value : len<100? value : "..." . SubStr(value,pos-50))
 			if (++matches>12)
 				break
 		}
@@ -293,7 +299,7 @@ Loop {
 			matchV[matches] := value
 			matchK[matches] := -key-1
 			len:=StrLen(value)
-			print.="`n f" . matches . "`t" . key . " " . (len<50? value : pos+30>len? "..." . SubStr(value,-50) : pos>25? SubStr(value,1,10) . "..." . SubStr(value,pos-10,50) . "..." : SubStr(value,1,50) . "...")
+			print.="`n F" . matches . "`t" . key . " " . (pos<=50? value : len<100? value : "..." . SubStr(value,pos-50))
 			matches++
 		}
 		GuiControl,,Console, % matches>1? print : print . "`nF1-12`tset`nEnter`tappend to presets && send"
