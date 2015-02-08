@@ -1,5 +1,3 @@
-;autosave
-
 #NoEnv
 #SingleInstance force
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
@@ -25,12 +23,13 @@ if !FileExist("recliner.ini")
 		FontColor=FF0000
 		BGColor=808080
 		FontSize=10
+		AutosaveFrequency=100
 	), recliner.ini
 #Include recliner.ini
 
-Defaults := {Hotkey:"f4",MinLength:2,FontColor:"BBCCDD",BGColor:"000000",FontSize:12,Font:"Arial Narrow"}
+Defaults := {Hotkey:"f4",MinLength:2,FontColor:"BBCCDD",BGColor:"000000",FontSize:12,Font:"Arial Narrow", AutosaveFrequency:"100"}
 for key,value in Defaults
-	if %key%
+	if %key% =
 		%key%=%value%
 
 Hotkey,%Hotkey%,uiLoop
@@ -104,6 +103,8 @@ Loop {
 		else if (Asc(A_LoopField)>=32)
 			out.=A_LoopField
 	log[logL++]:=out
+	if (!mod(logL,AutosaveFrequency))
+		GoSub, Autosave
 }
 return
 
@@ -122,10 +123,6 @@ ConsoleMsg(string, hide=0) {
 }
 
 WriteLog:
-	File := FileOpen("recliner.log","w `r`n")
-	for key,value in log
-		File.WriteLine(value)
-	File.close()
 	File := FileOpen("recliner.ini","w `r`n")
 		File.WriteLine("WinPos:={X:" . ClientX . ", Y:" . ClientY . ", W:" . ClientW . ", H:" . ClientH . "}")
 		File.WriteLine("Hotkey=" . Hotkey)
@@ -134,6 +131,12 @@ WriteLog:
 		File.WriteLine("FontColor=" . FontColor)
 		File.WriteLine("BGColor=" . BGColor)
 		File.WriteLine("FontSize=" . FontSize)
+		File.WriteLine("AutosaveFrequency=" . AutosaveFrequency)
+	File.close()
+Autosave:
+	File := FileOpen("recliner.log","w `r`n")
+		for key,value in log
+			File.WriteLine(value)
 	File.close()
 	return
 MenuSave:
@@ -154,11 +157,7 @@ MenuEditSettings:
 	Run, recliner.ini
 	return
 MenuExit:
-	entry := ConsoleMsg("Save log? (y/n/esc)",1)
-	if (entry="y")
-		Gosub, WriteLog
-	else if (entry!="n")
-		return
+	Gosub, WriteLog
 	ExitApp
 
 uiLoop:
@@ -280,11 +279,9 @@ ProcDel:
 	deletions=0
 	for key in deleteK {
 		deletions++
-		if key>=0
-			pre[key]:=""
-		else
-			log.Remove(-key-1)
+		log.Remove(key)
 	}
+	return
 
 SendString(string) {
 	Gui, hide
