@@ -1,6 +1,4 @@
-; console position in .ini
-; need easier way to browse history (browse mode?)
-; need to document how to comment in ini file
+; inconsistency in how browse v search displays index
 
 #NoEnv
 #SingleInstance force
@@ -21,30 +19,18 @@ ctrV:=chr(22)
 if !FileExist("recliner.ini")
 	FileAppend,
 	( LTrim
-		;Hotkey=#s
-		;   Examples: ^t (control t) !f5 (alt f5) +f6 (shift f6) #s (windows s) See http://www.autohotkey.com/docs/Hotkeys.htm for further documenation (Default f4)
-		;MinLength=14
-		;   Strings shorter than this length will not be stored in the archive (default 2)
-		;Font=Courier
-		;FontColor=FFF00
-		;BGColor=808080
-		;FontSize=10
+		Hotkey=f4
+		MinLength=2
+		Font=Courier
+		FontColor=FF0000
+		BGColor=808080
+		FontSize=10
 	), recliner.ini
-FileRead, Settings, recliner.ini
-Loop, Parse, Settings, `n, `r
-{	if (SubStr(A_LoopField,1,1)=";")
-		continue
-	StringGetPos, pos, A_LoopField, =
-	if (ErrorLevel || !pos)
-		continue
-	StringLeft, VarName, A_LoopField, pos
-	StringTrimLeft, VarVal, A_LoopField, pos+1
-	%VarName%=%VarVal%
-}
+#Include recliner.ini
 
-Defaults := {Hotkey:"f4",MinLength:2,FontColor:"BBCCDD",BGColor:"333333",FontSize:12,Font:"Arial Narrow"}
+Defaults := {Hotkey:"f4",MinLength:2,FontColor:"BBCCDD",BGColor:"000000",FontSize:12,Font:"Arial Narrow"}
 for key,value in Defaults
-	if !%key%
+	if %key%
 		%key%=%value%
 
 Hotkey,%Hotkey%,uiLoop
@@ -70,7 +56,7 @@ Gui, Font, s%FontSize% c%FontColor%, %Font%
 Gui, Color, %BGColor%
 Gui, Add, Text,vConsole r14 -Wrap,% "recLiner 1.3 _________ Hotkey: " . Hotkey . " ______________________________________________________________`n- " . logL . " entries loaded from recliner.log`n`nTips:`n- Drag and resize this window to change location of console`n- Change font and color in recliner.ini`n`n`n`n`n`n`n`nPress any key to continue"
 Gui, +AlwaysOnTop +ToolWindow +Resize
-Gui, show,, recLiner
+Gui, show, % "X" . WinPos.X . " Y" . WinPos.Y . " W" . WinPos.W, recLiner
 Winwaitactive, recLiner
 VarSetCapacity( rect, 16, 0 )
 MyGuiHWND := WinExist()
@@ -81,6 +67,7 @@ Gui, -Caption -Resize
 DllCall("GetClientRect", uint, MyGuiHWND, uint, &rect )
 ClientW := NumGet( rect, 8, "int" )
 WinMove, recLiner,,,,%ClientW%,%ClientH%
+WinGetPos, ClientX, ClientY,,,recLiner
 Winset, Region, 0-0 w%ClientW% h%ClientH% R30-30, recLiner
 Gui, hide
 
@@ -123,6 +110,15 @@ WriteLog:
 	File := FileOpen("recliner.log","w `r`n")
 	for key,value in log
 		File.WriteLine(value)
+	File.close()
+	File := FileOpen("recliner.ini","w `r`n")
+		File.WriteLine("WinPos:={X:" . ClientX . ", Y:" . ClientY . ", W:" . ClientW . ", H:" . ClientH . "}")
+		File.WriteLine("Hotkey=" . Hotkey)
+		File.WriteLine("MinLength=" . MinLength)
+		File.WriteLine("Font=" . Font)
+		File.WriteLine("FontColor=" . FontColor)
+		File.WriteLine("BGColor=" . BGColor)
+		File.WriteLine("FontSize=" . FontSize)
 	File.close()
 	return
 MenuSave:
