@@ -1,9 +1,5 @@
-; search by number
-; Don't need ini AND log
 ; console position in .ini
-; want some way to "scroll presets"
-; better filtering for 'english'?
-; need easier way to browse history
+; need easier way to browse history (browse mode?)
 ; need to document how to comment in ini file
 
 #NoEnv
@@ -57,7 +53,6 @@ log:=Object()
 logL:=0
 Loop, Read, recliner.log
 	log[logL++]:=A_LoopReadLine
-Gosub, RebuildPresets
 
 mark:=0
 browseKeys := Object("EndKey:Up",-1,"EndKey:Down",1,"EndKey:Delete",1,"EndKey:Left",-12,"EndKey:Right",12,"EndKey:Home",-999999,"EndKey:End",999999)
@@ -73,7 +68,7 @@ Menu, Tray, add, E&xit, MenuExit
 
 Gui, Font, s%FontSize% c%FontColor%, %Font%
 Gui, Color, %BGColor%
-Gui, Add, Text,vConsole r14 -Wrap,% "recLiner 1.3 _________ Hotkey: " . Hotkey . " ______________________________________________________________`n- " . logL . " logs " . preL . " presets loaded from recliner.log`n`nTips:`n- Drag and resize this window to change location of console`n- Change font and color in recliner.ini`n`n`n`n`n`n`n`nPress any key to continue"
+Gui, Add, Text,vConsole r14 -Wrap,% "recLiner 1.3 _________ Hotkey: " . Hotkey . " ______________________________________________________________`n- " . logL . " entries loaded from recliner.log`n`nTips:`n- Drag and resize this window to change location of console`n- Change font and color in recliner.ini`n`n`n`n`n`n`n`nPress any key to continue"
 Gui, +AlwaysOnTop +ToolWindow +Resize
 Gui, show,, recLiner
 Winwaitactive, recLiner
@@ -159,7 +154,10 @@ uiLoop:
 Gui, show
 next := mark+1>=logL? logL-1 : mark+1
 nextEnt := log[next]
-GuiControl,,Console,% ">`t^U:clear ^V:paste ^Save arrows:history`nEnter`t" . (StrLen(nextEnt) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets
+first12:=""
+Loop 12
+	first12.="`n F" . A_Index . "`t" . log[A_Index-1]
+GuiControl,,Console,% ">`t^U:clear ^V:paste ^Save arrows:history`nEnter`t" . (StrLen(nextEnt) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . first12
 matches := 1
 Entry=
 NotFirstPress=0
@@ -263,7 +261,7 @@ Loop {
 		}
 		GuiControl,,Console, % print
 	} else
-		GuiControl,,Console, % ">`nEnter`t" . (StrLen(nextDisP) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets
+		GuiControl,,Console, % ">`nEnter`t" . (StrLen(nextDisP) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . first12
 }
 Gui, hide
 return
@@ -277,12 +275,6 @@ ProcDel:
 		else
 			log.Remove(-key-1)
 	}
-
-RebuildPresets:
-	presets:=""
-	Loop 12
-		presets.="`n F" . A_Index . "`t" . log[A_Index-1]
-	return
 
 SendString(string) {
 	Gui, hide
