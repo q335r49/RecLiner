@@ -43,12 +43,8 @@ mark:=0
 browseKeys := Object("EndKey:Up",-1,"EndKey:Down",1,"EndKey:Delete",1,"EndKey:Left",-12,"EndKey:Right",12,"EndKey:Home",-999999,"EndKey:End",999999)
 
 Menu, Tray, Nostandard
-Menu, Tray, add, &Edit log, MenuEditLog
-Menu, Tray, add, &Reload from log, MenuReload
-Menu, Tray, add, &Edit Settings, MenuEditSettings
-Menu, Tray, add
-Menu, Tray, add, P&ause, MenuPause
-Menu, Tray, add, S&ave, MenuSave
+Menu, Tray, add, &Edit log..., MenuEditLog
+Menu, Tray, add, &Edit Settings..., MenuEditSettings
 Menu, Tray, add, E&xit, MenuExit
 
 Gui, Font, s%FontSize% c%FontColor%, %Font%
@@ -139,18 +135,8 @@ Autosave:
 			File.WriteLine(value)
 	File.close()
 	return
-MenuSave:
-	Gosub, WriteLog
-	ConsoleMsg(logL . " logs written to recliner.log`n(Press any key to continue)",1)
-	return
-MenuPause:
-	Pause
-	return
-MenuReload:
-	Reload
-	return
 MenuEditLog:
-	Gosub, MenuSave
+	Gosub, WriteLog
 	Run, recliner.log
 	return
 MenuEditSettings:
@@ -240,7 +226,7 @@ Loop {
 	else if (char=ctrS) { 
 		Gosub, WriteLog
 		GoSub, ProcDel
-		ConsoleMsg(logL . " logs written to recliner`n(Press any key to continue).log")
+		ConsoleMsg(logL . " logs written to recliner.log`n(Press any key to continue)")
 		break
 	} else if (char=ctrV)
 		Entry=%clipboard%
