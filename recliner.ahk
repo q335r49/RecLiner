@@ -1,8 +1,21 @@
+; truncation is way too short
+; want some way to "scroll presets"
+; font and color are terrible
+; rounded corners
+; help message about dragging the starting screen
+; should make console resizable as well
+; should save console position
+; better filtering for 'english'
+; search by number or label
+
 #NoEnv
 #SingleInstance force
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+
 StringCaseSense, Off
+FileEncoding, UTF-8
+
 ctrDel:=chr(127)
 ctrS:=chr(19)
 ctrH:=chr(8)
@@ -10,18 +23,20 @@ ctrA:=chr(1)
 ctrU:=chr(21)
 ctrZ:=chr(26)
 ctrV:=chr(22)
+
 if !FileExist("reclinerv102.ini")
 	FileAppend,
 	( LTrim
 		;Hotkey=#s
 		;   Examples: ^t (control t) !f5 (alt f5) +f6 (shift f6) #s (windows s) See http://www.autohotkey.com/docs/Hotkeys.htm for further documenation (Default f4)
 		;MinLength=14
-		;   Strings shorter than this length will not be stored in the archive (default 14)
+		;   Strings shorter than this length will not be stored in the archive (default 2)
 		;Font=Courier
 		;FontColor=FFF00
 		;BGColor=808080
 		;FontSize=10
 	), reclinerv102.ini
+
 FileRead, Settings, reclinerv102.ini
 Loop, Parse, Settings, `n, `r
 {	if (SubStr(A_LoopField,1,1)=";")
@@ -33,11 +48,14 @@ Loop, Parse, Settings, `n, `r
 	StringTrimLeft, VarVal, A_LoopField, pos+1
 	%VarName%=%VarVal%
 }
-Defaults := {Hotkey:"f4",MinLength:14,FontColor:"FFFFFF",BGColor:000000,FontSize:10,Font:"Lucida Console"}
+
+Defaults := {Hotkey:"f4",MinLength:2,FontColor:"DDEEDD",BGColor:221122,FontSize:12,Font:"Arial Narrow"}
 for key,value in Defaults
 	if !%key%
 		%key%=%value%
+
 Hotkey,%Hotkey%,uiLoop
+
 log:=Object()
 pre:=Object()
 logL:=0
@@ -53,8 +71,10 @@ Loop, Read, recliner.log
 while preL < 12
 	pre[preL++]:=""
 Gosub, RebuildPresets
+
 mark:=0
 browseKeys := Object("EndKey:Up",-1,"EndKey:Down",1,"EndKey:Delete",1,"EndKey:Left",-12,"EndKey:Right",12,"EndKey:Home",-999999,"EndKey:End",999999)
+
 Menu, Tray, Nostandard
 Menu, Tray, add, &Edit log, MenuEditLog
 Menu, Tray, add, &Reload from log, MenuReload
@@ -63,13 +83,15 @@ Menu, Tray, add
 Menu, Tray, add, P&ause, MenuPause
 Menu, Tray, add, S&ave, MenuSave
 Menu, Tray, add, E&xit, MenuExit
+
 Gui, Font, s%FontSize% c%FontColor%, %Font%
 Gui, Color, %BGColor%
 Gui, Add, Text,vConsole r16, WW`tWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 Gui, +AlwaysOnTop +ToolWindow
 Gui, show,, recLiner
-ConsoleMsg(logL . " logs " . preL . " presets loaded from recliner.log`n(Press any key to continue)",1)
+ConsoleMsg(logL . " logs " . preL . " presets loaded from recliner.log`n(Press any key to continue)`nTip: Drag this window to change location of console display",1)
 Gui, -Caption
+
 Loop {
 	Input, k, V M, {enter}{esc}{tab}
 	if (StrLen(k)<MinLength)
@@ -85,7 +107,7 @@ Loop {
 			StringTrimRight,out,out,1
 		else if (A_LoopField = ctrA)
 			out=
-		else
+		else if (Asc(A_LoopField)>=32)
 			out.=A_LoopField
 	log[logL++]:=out
 }
@@ -153,7 +175,7 @@ deleteK := {}
 nmode=0
 Winwaitactive, recLiner
 Loop {
-	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{up}{down}{left}{right}{delete}{home}{end}
+	Input, char, M L1, {enter}{esc}{bs}{f1}{f2}{f3}{f4}{f5}{f6}{f7}{f8}{f9}{f10}{f11}{f12}{up}{down}{left}{right}{delete}{home}{end}
 	if browseKeys.HasKey(ErrorLevel) {
 		nmode=1
 		mark:=matches>1? matchK[1] : mark
