@@ -54,18 +54,17 @@ Menu, Tray, add, E&xit, MenuExit
 
 Gui, Font, s%FontSize% c%FontColor%, %Font%
 Gui, Color, %BGColor%
-Gui, Add, Text,vConsole r14 -Wrap,
+Gui, Add, Text,vConsole r14 w1000 -Wrap,
 	( LTrim
 		RECLINER 1.3, updated 2/8/2015
 		hotkey: %Hotkey%		recliner.log: %logL% entries
 		
 		Recliner logs all typed text in recliner.log
-		- Search by entering text
-		- Retrieve index by typing in a number.
-		- Negative numbers retreive most recently typed entries.
-		- Place most often used entries in the first 12 positions for quick access
-		- Drag and resize this window to change location of console
+		- Search by text or (positive or negative) index number.
+		- Edit recliner.log and place most often used entries first for quick access
+		- Drag and resize this window to change location of console.
 		- Change font, color, and hotkey in recliner.ini
+
 
 
 		(Press any key to continue)
