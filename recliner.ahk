@@ -1,4 +1,3 @@
-; gui width setting / allow resizing
 ; console position .ini
 ; need save dialogue for reload??
 ; want some way to "scroll presets"
@@ -21,7 +20,7 @@ ctrU:=chr(21)
 ctrZ:=chr(26)
 ctrV:=chr(22)
 
-if !FileExist("reclinerv102.ini")
+if !FileExist("recliner.ini")
 	FileAppend,
 	( LTrim
 		;Hotkey=#s
@@ -87,14 +86,17 @@ Gui, Add, Text,vConsole r14 -Wrap, WW`tWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 
 Gui, +AlwaysOnTop +ToolWindow +Resize
 Gui, show,, recLiner
-GuiControl,,Console,logL . " logs " . preL . " presets loaded from recliner.log`n(Press any key to continue)`nTip: Drag this window to change location of console display"
+VarSetCapacity( rect, 16, 0 )
+GuiControl,,Console,% "`trecLiner 1.3`tHotkey: " . Hotkey . "`n... " . logL . " logs " . preL . " presets loaded from recliner.log`n`nTips:`n- Drag and resize this window to change location of console`n- Change font and color in recliner.ini`n`n`n`n`n`n`n`n(Press any key to continue)"
 Winwaitactive, recLiner
+MyGuiHWND := WinExist()
+DllCall("GetClientRect", uint, MyGuiHWND, uint, &rect )
+ClientH := NumGet( rect, 12, "int" )
 Input, char, L1
 Gui, -Caption -Resize
-VarSetCapacity( rect, 16, 0 )
-DllCall("GetClientRect", uint, MyGuiHWND := WinExist(), uint, &rect )
+DllCall("GetClientRect", uint, MyGuiHWND, uint, &rect )
 ClientW := NumGet( rect, 8, "int" )
-ClientH := NumGet( rect, 12, "int" )
+WinMove, recLiner,,,,%ClientW%,%ClientH%
 Winset, Region, 0-0 w%ClientW% h%ClientH% R30-30, recLiner
 Gui, hide
 
@@ -171,7 +173,7 @@ uiLoop:
 Gui, show
 next := mark>=0? (mark+1>=preL? preL-1 : mark+1) : (-mark>logL? -logL-1 : mark-1)
 nextEnt := next>=0? pre[next] : log[-next-1]
-GuiControl,,Console,% ">`n^U:clear ^V:paste ^Save arrows:history`nEnter`t" . (StrLen(nextEnt) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets
+GuiControl,,Console,% ">`t^U:clear ^V:paste ^Save arrows:history`nEnter`t" . (StrLen(nextEnt) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . presets
 matches := 1
 Entry=
 NotFirstPress=0
@@ -321,7 +323,7 @@ ProcDel:
 RebuildPresets:
 	presets:=""
 	Loop 12
-		presets.="`n F" . A_Index . "`t" . (StrLen(pre[A_Index-1])>50? SubStr(pre[A_Index-1],1,50) . " ..." : pre[A_Index-1]) 
+		presets.="`n F" . A_Index . "`t" . pre[A_Index-1]
 	return
 
 SendString(string) {
