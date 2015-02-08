@@ -134,7 +134,7 @@ MenuEditLog:
 	Run, recliner.log
 	return
 MenuEditSettings:
-	Run, reclinerv102.ini
+	Run, recliner.ini
 	return
 MenuExit:
 	entry := ConsoleMsg("Save log? (y/n/esc)",1)
@@ -151,7 +151,7 @@ nextEnt := log[next]
 first12:=""
 Loop 12
 	first12.="`n F" . A_Index . "`t" . log[A_Index-1]
-GuiControl,,Console,% ">`t^U:clear ^V:paste ^Save arrows:history`nEnter`t" . (StrLen(nextEnt) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . first12
+GuiControl,,Console,% ">`t^U:clear ^V:paste ^Save Arrows:browse`nEnter`t" . (StrLen(nextEnt) > 50? SubStr(nextEnt,1,50) . "..." : nextEnt) . first12
 matches := 1
 Entry=
 NotFirstPress=0
