@@ -54,7 +54,7 @@ Menu, Tray, add, E&xit, MenuExit
 
 Gui, Font, s%FontSize% c%FontColor%, %Font%
 Gui, Color, %BGColor%
-Gui, Add, Text,vConsole r14 w1000 -Wrap,
+Gui, Add, Text,vConsole r14 -Wrap,
 	( LTrim
 		RECLINER 1.3, updated 2/8/2015
 		hotkey: %Hotkey%		recliner.log: %logL% entries
@@ -80,6 +80,7 @@ Input, char, L1
 Gui, -Caption -Resize
 DllCall("GetClientRect", uint, MyGuiHWND, uint, &rect )
 ClientW := NumGet( rect, 8, "int" )
+GuiControl, Move, Console, % "w" . (ClientW-25)
 WinMove, recLiner,,,,%ClientW%,%ClientH%
 WinGetPos, ClientX, ClientY,,,recLiner
 Winset, Region, 0-0 w%ClientW% h%ClientH% R30-30, recLiner
