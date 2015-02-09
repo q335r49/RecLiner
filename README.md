@@ -1,7 +1,7 @@
 #RecLiner
 Record and recall lines that you have typed!
 * On <kbd>enter</kbd>, <kbd>esc</kbd>, or <kbd>tab</kbd>, the line just typed will be stored in a searchable history.
-* **[Youtube Demo](http://youtu.be/PIzkEBu4754)**
+* **[Youtube Demo](http://youtu.be/oMZfaVSBeqw)**
 
 ####Startup
 Install [Autohotkey 1.1.15+](http://ahkscript.org/download/) and run [recliner.ahk](https://raw.githubusercontent.com/q335r49/RecLiner/master/recliner.ahk).
