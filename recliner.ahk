@@ -19,18 +19,21 @@ if !FileExist("recliner.ini")
 	( LTrim
 		Hotkey=f4
 		MinLength=2
-		Font=Courier
+		Font=Arial
 		FontColor=FF0000
 		BGColor=808080
 		FontSize=10
 		AutosaveFrequency=100
 	), recliner.ini
-#Include recliner.ini
+Hotkey=f4
+MinLength=2
+Font=Arial
+FontColor=FF0000
+BGColor=000000
+FontSize=12
+AutosaveFrequency=100
 
-Defaults := {Hotkey:"f4",MinLength:2,FontColor:"BBCCDD",BGColor:"000000",FontSize:12,Font:"Arial Narrow", AutosaveFrequency:"100"}
-for key,value in Defaults
-	if %key% =
-		%key%=%value%
+#Include recliner.ini
 
 Hotkey,%Hotkey%,uiLoop
 
@@ -44,8 +47,9 @@ browseKeys := Object("EndKey:Up",-1,"EndKey:Down",1,"EndKey:Delete",1,"EndKey:Le
 
 Menu, Tray, Nostandard
 Menu, Tray, add, &Edit log..., MenuEditLog
-Menu, Tray, add, &Edit Settings..., MenuEditSettings
-Menu, Tray, add, E&xit, MenuExit
+Menu, Tray, add, &Reload from log, MenuReload
+Menu, Tray, add, Edit &Settings..., MenuEditSettings
+Menu, Tray, add, Save && E&xit, MenuExit
 
 Gui, Font, s%FontSize% c%FontColor%, %Font%
 Gui, Color, %BGColor%
@@ -138,6 +142,9 @@ Autosave:
 MenuEditLog:
 	Gosub, WriteLog
 	Run, recliner.log
+	return
+MenuReload:
+	Reload
 	return
 MenuEditSettings:
 	Run, recliner.ini
