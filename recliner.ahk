@@ -196,12 +196,13 @@ Loop {
 	} else if (SubStr(ErrorLevel,1,8)="EndKey:F") {
 		fN:=SubStr(ErrorLevel,9)
 		if (nmode=1) {
-			SendString(log[fN+start])
+			SendString(log[fN+start], fN+start)
 		} else if (matches>fN) {
-			SendString(matchV[fN])
+			SendString(matchV[fN], matchK[fN])
 			mark:=matchK[fN]
-		} else if (Entry="")
-			SendString(log[fN-1])
+		} else if (Entry="") {
+			SendString(log[fN-1],fN-1)
+		}
 		Gosub, ProcDel
 		if deletions>0
 			ConsoleMsg(deletions . " entries removed`n(Press any key to continue)")
@@ -214,11 +215,11 @@ Loop {
 			else
 				SendString(Entry)
 		} else if (matches>1) {
-			SendString(matchV[1])
+			SendString(matchV[1],matchK[1])
 			mark:=matchK[1]
 		} else if (Entry="") {
 			mark := next
-			SendString(nextEnt)
+			SendString(nextEnt,next)
 		} else
 			SendString(Entry)
 		break
@@ -276,8 +277,23 @@ ProcDel:
 	}
 	return
 
-SendString(string) {
+SendString(string, ix:=-1) {
+	global log
 	Gui, hide
 	WinWaitNotActive, RecGUI
+	NUM:=InStr(string,"\NUM") 
+	if NUM <> 0
+	{
+		END:=InStr(string," ",,NUM)
+		if END = 0
+			END := StrLen(string)
+		COUNTER:=SubStr(string,NUM+4,END-NUM-4)
+		COUNTER++
+
+		if ix <> -1
+			log[ix]:=SubStr(string,1,NUM-1) . "\NUM" . COUNTER . SubStr(string,END)
+
+		string:=SubStr(string,1,NUM-1) . COUNTER . SubStr(string,END)
+	}
 	Send % SubStr(string,1,3)="###"? SubStr(string,4) : "{Raw}" . string
 }
