@@ -14,7 +14,7 @@ ctrU:=chr(21)
 ctrZ:=chr(26)
 ctrV:=chr(22)
 
-if !FileExist("recliner.ini")
+if (!FileExist("recliner.ini")) {
 	FileAppend,
 	( LTrim
 		Hotkey=f4
@@ -24,7 +24,9 @@ if !FileExist("recliner.ini")
 		BGColor=808080
 		FontSize=10
 		AutosaveFrequency=100
+		WinPos:={X:0, Y:0, W:800, H:400}
 	), recliner.ini
+}
 Hotkey=f4
 MinLength=2
 Font=Arial
@@ -32,8 +34,9 @@ FontColor=FF0000
 BGColor=000000
 FontSize=12
 AutosaveFrequency=100
+WinPos:={X:0, Y:0, W:800, H:400}
 
-#Include recliner.ini
+#include *i recliner.ini
 
 Hotkey,%Hotkey%,uiLoop
 
